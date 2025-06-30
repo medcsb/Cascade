@@ -1,2 +1,4 @@
 # ignore everythin in the build directory
 build/*
+# vscode settings
+.vscode/*
