@@ -1,2 +1,2 @@
 # Cascade
-Cascade is a C++ physics and rendering engine built with Vulkan.
+Cascade is a C++ physics and rendering engine built using Vulkan.
