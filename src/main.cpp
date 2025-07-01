@@ -5,10 +5,10 @@
 #include <stdexcept>
 #include <cstdlib>
 
-#include "App.hpp"
+#include "Renderer.hpp"
 
 int main() {
-    App app;
+    Renderer app;
     try {
         app.run();
     } catch (const std::exception& e) {
