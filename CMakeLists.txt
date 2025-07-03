@@ -27,17 +27,20 @@ add_subdirectory(extern/glfw)
 add_subdirectory(extern/glm EXCLUDE_FROM_ALL)
 
 # === Your app ===
-
+file(GLOB RENDERER_SOURCES src/Renderer/*.cpp)
+file(GLOB APP_SOURCES src/App/*.cpp)
 add_executable(cascade_engine
-    src/main.cpp
+    ${RENDERER_SOURCES}
+    ${APP_SOURCES}
     # add your other source files here
 )
 
 # Include dirs (your includes + GLM if needed explicitly)
 target_include_directories(cascade_engine PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
     extern/Vulkan-Headers/include
     extern/glm
+    src/Renderer
+    src/App
 )
 
 # Link libraries

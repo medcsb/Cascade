@@ -1,20 +1,16 @@
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
+#include "vcr_app.hpp"
 
 #include <iostream>
 #include <stdexcept>
 #include <cstdlib>
 
-#include "Renderer.hpp"
-
 int main() {
-    Renderer app;
+    vcr::App app{};
     try {
         app.run();
     } catch (const std::exception& e) {
-        std::cerr << e.what() << "\n";
+        std::cerr << "Exception: " << e.what() << '\n';
         return EXIT_FAILURE;
     }
-
     return EXIT_SUCCESS;
 }
