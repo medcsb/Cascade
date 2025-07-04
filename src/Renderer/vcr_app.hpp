@@ -5,6 +5,7 @@
 #include "vcr_pipeline.hpp"
 #include "vcr_device.hpp"
 #include "vcr_swap_chain.hpp"
+#include "vcr_model.hpp"
 
 #include <memory>
 #include <vector>
@@ -21,6 +22,7 @@ private:
     std::unique_ptr<Pipeline> pipeline;
     VkPipelineLayout pipelineLayout;
     std::vector<VkCommandBuffer> commandBuffers;
+    std::unique_ptr<Model> model;
 public:
     App();
     ~App();
@@ -32,6 +34,7 @@ private:
     void createPipeline();
     void createCommandBuffers();
     void drawFrame();
+    void loadModels();
 };
 }
 

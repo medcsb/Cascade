@@ -1,4 +1,5 @@
 #include "vcr_pipeline.hpp"
+#include "vcr_model.hpp"
 
 #include <fstream>
 #include <stdexcept>
@@ -46,12 +47,14 @@ void Pipeline::createGraphicsPipeline(const std::string& vertFilePath, const std
     ShaderStageInfo[1].pNext = nullptr;
     ShaderStageInfo[1].pSpecializationInfo = nullptr;
 
+    auto bindingDescription = Model::Vertex::getBindingDescriptions();
+    auto attributeDescriptions = Model::Vertex::getAttributeDescriptions();
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInputInfo.vertexAttributeDescriptionCount = 0; // Optional
-    vertexInputInfo.vertexBindingDescriptionCount = 0; // Optional
-    vertexInputInfo.pVertexAttributeDescriptions = nullptr; // Optional
-    vertexInputInfo.pVertexBindingDescriptions = nullptr; // Optional
+    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+    vertexInputInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDescription.size());
+    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+    vertexInputInfo.pVertexBindingDescriptions = bindingDescription.data();
 
     VkPipelineViewportStateCreateInfo viewportInfo{};
     viewportInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
