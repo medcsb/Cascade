@@ -2,3 +2,5 @@
 build/*
 # vscode settings
 .vscode/*
+#clang format
+.clang-format
