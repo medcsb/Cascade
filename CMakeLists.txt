@@ -9,6 +9,34 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# === Compiling Shaders ===
+# Find the shader compiler (glslc)
+set(Vulkan_GLSLC_EXECUTABLE "C:/VulkanSDK/1.4.313.2/Bin/glslc.exe")
+
+# set shader path
+set(SHADERS
+    ${CMAKE_SOURCE_DIR}/shaders/shader.vert
+    ${CMAKE_SOURCE_DIR}/shaders/shader.frag
+)
+
+# compile shaders
+set (SPV_FILES "")
+foreach(SHADER ${SHADERS})
+    get_filename_component(FILE_NAME ${SHADER} NAME)
+    set(SPV "${CMAKE_SOURCE_DIR}/shaders/${FILE_NAME}.spv")
+
+    add_custom_command(
+        OUTPUT ${SPV}
+        COMMAND ${Vulkan_GLSLC_EXECUTABLE} ${SHADER} -o ${SPV}
+        DEPENDS ${SHADER}
+        COMMENT "Compiling ${FILE_NAME} to SPIR-V"
+    )
+    list(APPEND SPV_FILES ${SPV})
+endforeach()
+
+# Create a custom target to compile shaders
+add_custom_target(compile_shaders ALL DEPENDS ${SPV_FILES})
+
 # === Dependencies ===
 
 # Vulkan-Headers
@@ -48,3 +76,5 @@ target_link_libraries(cascade_engine PRIVATE
     vulkan
     glfw
 )
+
+add_dependencies(cascade_engine compile_shaders)

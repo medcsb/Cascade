@@ -11,8 +11,9 @@ namespace vcr {
 class Window {
 private:
     GLFWwindow* window;
-    const int width;
-    const int height;
+    int width;
+    int height;
+    bool framebufferResized = false;
 
     std::string windowName;
 
@@ -26,9 +27,12 @@ public:
     bool shouldClose() const { return glfwWindowShouldClose(window); }
     void createWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
     VkExtent2D getExtent() {return {static_cast<uint32_t>(width), static_cast<uint32_t>(height)}; }
+    bool wasWindowResized() { return framebufferResized; }
+    void resetWindowResizedFlag() { framebufferResized = false; }
 
 private:
     void initWindow();
+    static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 };
 }
 
