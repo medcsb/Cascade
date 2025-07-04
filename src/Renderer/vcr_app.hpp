@@ -6,6 +6,7 @@
 #include "vcr_device.hpp"
 #include "vcr_swap_chain.hpp"
 #include "vcr_model.hpp"
+#include "vcr_game_obj.hpp"
 
 #include <memory>
 #include <vector>
@@ -22,7 +23,7 @@ private:
     std::unique_ptr<Pipeline> pipeline;
     VkPipelineLayout pipelineLayout;
     std::vector<VkCommandBuffer> commandBuffers;
-    std::unique_ptr<Model> model;
+    std::vector<GameObject> gameObjects;
 public:
     App();
     ~App();
@@ -35,9 +36,10 @@ private:
     void createCommandBuffers();
     void freeCommandBuffers();
     void drawFrame();
-    void loadModels();
+    void loadGameObjects();
     void recreateSwapChain();
     void recordCommandBuffer(int imgIndex);
+    void renderGameObjects(VkCommandBuffer commandBuffer);
 };
 }
 

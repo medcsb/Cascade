@@ -5,6 +5,8 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 
+#include <glm/gtc/constants.hpp>
+
 #include <array>
 #include <stdexcept>
 
@@ -34,12 +36,13 @@ void sirpinski(
 namespace vcr {
 
 struct SimplePushConstantData {
+    glm::mat2 transform{1.0f};
     glm::vec2 offset;
     alignas(16) glm::vec3 color;
 };
 
 App::App() {
-    loadModels();
+    loadGameObjects();
     createPipelineLayout();
     recreateSwapChain();
     createCommandBuffers();
@@ -148,8 +151,6 @@ void App::recreateSwapChain() {
 }
 
 void App::recordCommandBuffer(int imgIndex) {
-    static int frame = 0;
-    frame = (frame + 1) % 1000;
 
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -187,29 +188,35 @@ void App::recordCommandBuffer(int imgIndex) {
     vkCmdSetViewport(commandBuffers[imgIndex], 0, 1, &viewport);
     vkCmdSetScissor(commandBuffers[imgIndex], 0, 1, &scissor);
 
-    pipeline->bind(commandBuffers[imgIndex]);
-    model->bind(commandBuffers[imgIndex]);
+    renderGameObjects(commandBuffers[imgIndex]);
 
-    for (int j=0; j<4; j++) {
-        SimplePushConstantData push{};
-        push.offset = {-0.5f + frame * 0.001f, -0.5f + j * 0.25f};
-        push.color = {0.0f, 0.0f, 0.2f + 0.2f * j};
-
-        vkCmdPushConstants(commandBuffers[imgIndex],
-                           pipelineLayout,
-                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                           0,
-                           sizeof(SimplePushConstantData),
-                           &push);
-        model->draw(commandBuffers[imgIndex]);
-    }
     vkCmdEndRenderPass(commandBuffers[imgIndex]);
     if (vkEndCommandBuffer(commandBuffers[imgIndex]) != VK_SUCCESS) {
     throw std::runtime_error("failed to record command buffer!");
   }
 }
 
-void App::loadModels() {
+void App::renderGameObjects(VkCommandBuffer commandBuffer) {
+    pipeline->bind(commandBuffer);
+    for (auto &obj : gameObjects) {
+        obj.transform2d.rotation = glm::mod(obj.transform2d.rotation + 0.001f, glm::two_pi<float>());
+        SimplePushConstantData push{};
+        push.offset = obj.transform2d.translation;
+        push.color = obj.color;
+        push.transform = obj.transform2d.mat2();
+
+        vkCmdPushConstants(commandBuffer,
+                           pipelineLayout,
+                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                           0,
+                           sizeof(SimplePushConstantData),
+                           &push);
+        obj.model->bind(commandBuffer);
+        obj.model->draw(commandBuffer);
+    }
+}
+
+void App::loadGameObjects() {
     std::vector<Model::Vertex> vertices = {
       {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
       {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
@@ -219,6 +226,15 @@ void App::loadModels() {
     //std::vector<Model::Vertex> vertices;
     //sirpinski(vertices, 5, {-0.7f, 0.7f}, {0.7f, 0.7f}, {0.0f, -0.7f});
 
-    model = std::make_unique<Model>(device, vertices);
+    auto model = std::make_shared<Model>(device, vertices);
+
+    auto triangle = GameObject::createGameObject();
+    triangle.model = model;
+    triangle.color = {.2f, 0.8f, 0.1f};
+    triangle.transform2d.translation.x = 0.2f;
+    triangle.transform2d.scale = {1.4f, 1.5f};
+    triangle.transform2d.rotation = 0.25f * glm::pi<float>();
+
+    gameObjects.push_back(std::move(triangle));
 }
 } // namespace vcr

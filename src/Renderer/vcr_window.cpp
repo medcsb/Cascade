@@ -4,8 +4,7 @@
 
 namespace vcr {
 
-Window::Window(int width, int height, const std::string& name) :
-    width(width), height(height), windowName(name) {
+Window::Window(int width, int height, const std::string& name) : width(width), height(height), windowName(name) {
     initWindow();
 }
 
@@ -36,4 +35,4 @@ void Window::framebufferResizeCallback(GLFWwindow* window, int width, int height
     vcrWindow->width = width;
     vcrWindow->height = height;
 }
-}
+} // namespace vcr

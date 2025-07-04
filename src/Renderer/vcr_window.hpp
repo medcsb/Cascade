@@ -6,15 +6,17 @@
 
 #include <string>
 
-namespace vcr {
+namespace vcr
+{
 
-class Window {
+class Window
+{
 private:
-    GLFWwindow* window;
     int width;
     int height;
     bool framebufferResized = false;
 
+    GLFWwindow* window;
     std::string windowName;
 
 public:
@@ -25,15 +27,16 @@ public:
     Window& operator=(const Window&) = delete;
 
     bool shouldClose() const { return glfwWindowShouldClose(window); }
-    void createWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
-    VkExtent2D getExtent() {return {static_cast<uint32_t>(width), static_cast<uint32_t>(height)}; }
+    VkExtent2D getExtent() { return {static_cast<uint32_t>(width), static_cast<uint32_t>(height)}; }
     bool wasWindowResized() { return framebufferResized; }
     void resetWindowResizedFlag() { framebufferResized = false; }
+
+    void createWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
 
 private:
     void initWindow();
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 };
-}
+} // namespace vcr
 
 #endif // VCR_WINDOW_HPP
