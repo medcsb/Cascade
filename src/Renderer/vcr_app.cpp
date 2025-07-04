@@ -1,15 +1,15 @@
 #include "vcr_app.hpp"
 
-#ifdef NDEBUG
-    const std::string vertShaderPath = "../shaders/shader.vert.spv";
-    const std::string fragShaderPath = "../shaders/shader.frag.spv";
-#else
-    const std::string vertShaderPath = "shaders/shader.vert.spv";
-    const std::string fragShaderPath = "shaders/shader.frag.spv";
-#endif
+
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
 
 #include <array>
 #include <stdexcept>
+
+const std::string vertShaderPath = "shaders/shader.vert.spv";
+const std::string fragShaderPath = "shaders/shader.frag.spv";
 
 void sirpinski(
     std::vector<vcr::Model::Vertex> &vertices,
@@ -32,6 +32,11 @@ void sirpinski(
 }
 
 namespace vcr {
+
+struct SimplePushConstantData {
+    glm::vec2 offset;
+    alignas(16) glm::vec3 color;
+};
 
 App::App() {
     loadModels();
@@ -76,16 +81,20 @@ void App::drawFrame() {
 }
 
 void App::createPipelineLayout() {
-  VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-  pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-  pipelineLayoutInfo.setLayoutCount = 0;            // Optional
-  pipelineLayoutInfo.pSetLayouts = nullptr;         // Optional
-  pipelineLayoutInfo.pushConstantRangeCount = 0;    // Optional
-  pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
-  if (vkCreatePipelineLayout(device.device(), &pipelineLayoutInfo, nullptr,
-                             &pipelineLayout) != VK_SUCCESS) {
-    throw std::runtime_error("failed to create pipeline layout!");
-  }
+    VkPushConstantRange pushConstantRange{};
+    pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    pushConstantRange.offset = 0;
+    pushConstantRange.size = sizeof(SimplePushConstantData);
+
+    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    pipelineLayoutInfo.setLayoutCount = 0;            
+    pipelineLayoutInfo.pSetLayouts = nullptr;         
+    pipelineLayoutInfo.pushConstantRangeCount = 1;    
+    pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange; 
+    if (vkCreatePipelineLayout(device.device(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create pipeline layout!");
+    }
 }
 
 void App::createPipeline() {
@@ -139,6 +148,9 @@ void App::recreateSwapChain() {
 }
 
 void App::recordCommandBuffer(int imgIndex) {
+    static int frame = 0;
+    frame = (frame + 1) % 1000;
+
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     if (vkBeginCommandBuffer(commandBuffers[imgIndex], &beginInfo) != VK_SUCCESS) {
@@ -177,7 +189,20 @@ void App::recordCommandBuffer(int imgIndex) {
 
     pipeline->bind(commandBuffers[imgIndex]);
     model->bind(commandBuffers[imgIndex]);
-    model->draw(commandBuffers[imgIndex]);
+
+    for (int j=0; j<4; j++) {
+        SimplePushConstantData push{};
+        push.offset = {-0.5f + frame * 0.001f, -0.5f + j * 0.25f};
+        push.color = {0.0f, 0.0f, 0.2f + 0.2f * j};
+
+        vkCmdPushConstants(commandBuffers[imgIndex],
+                           pipelineLayout,
+                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                           0,
+                           sizeof(SimplePushConstantData),
+                           &push);
+        model->draw(commandBuffers[imgIndex]);
+    }
     vkCmdEndRenderPass(commandBuffers[imgIndex]);
     if (vkEndCommandBuffer(commandBuffers[imgIndex]) != VK_SUCCESS) {
     throw std::runtime_error("failed to record command buffer!");
