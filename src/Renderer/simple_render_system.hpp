@@ -1,8 +1,9 @@
 #ifndef SIMPLE_RENDER_SYSTEM_HPP
 #define SIMPLE_RENDER_SYSTEM_HPP
 
+#include "vcr_camera.hpp"
 #include "vcr_device.hpp"
-#include "vcr_2d_obj.hpp"
+#include "vcr_obj.hpp"
 #include "vcr_pipeline.hpp"
 
 // std
@@ -18,7 +19,9 @@ public:
     SimpleRenderSystem(const SimpleRenderSystem&) = delete;
     SimpleRenderSystem& operator=(const SimpleRenderSystem&) = delete;
 
-    void renderObject2Ds(VkCommandBuffer commandBuffer, std::vector<Object2D>& objects2D);
+    void renderObjects(VkCommandBuffer commandBuffer,
+                       std::vector<Object>& objects,
+                       const Camera& camera);
 
 private:
     void createPipelineLayout();

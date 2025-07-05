@@ -17,8 +17,7 @@ const std::string fragShaderPath = "shaders/shader.frag.spv";
 namespace vcr {
 
 struct SimplePushConstantData {
-    glm::mat2 transform{1.f};
-    glm::vec2 offset;
+    glm::mat4 transform{1.f};
     alignas(16) glm::vec3 color;
 };
 
@@ -56,21 +55,23 @@ void SimpleRenderSystem::createPipeline(VkRenderPass renderPass) {
     Pipeline::defaultPipelineConfigInfo(pipelineConfig);
     pipelineConfig.renderPass = renderPass;
     pipelineConfig.pipelineLayout = pipelineLayout;
-    pipeline = std::make_unique<Pipeline>(
-        device, vertShaderPath, fragShaderPath, pipelineConfig);
+    pipeline = std::make_unique<Pipeline>(device, vertShaderPath, fragShaderPath, pipelineConfig);
 }
 
-void SimpleRenderSystem::renderObject2Ds(VkCommandBuffer commandBuffer,
-                                           std::vector<Object2D>& objects2D) {
+void SimpleRenderSystem::renderObjects(VkCommandBuffer commandBuffer,
+                                       std::vector<Object>& objects,
+                                       const Camera& camera) {
     pipeline->bind(commandBuffer);
 
-    for (auto& obj : objects2D) {
-        obj.transform2d.rotation = glm::mod(obj.transform2d.rotation + 0.01f, glm::two_pi<float>());
+    for (auto& obj : objects) {
+        obj.transform.rotation.y =
+            glm::mod(obj.transform.rotation.y + 0.001f, glm::two_pi<float>());
+        obj.transform.rotation.x =
+            glm::mod(obj.transform.rotation.x + 0.001f, glm::two_pi<float>());
 
         SimplePushConstantData push{};
-        push.offset = obj.transform2d.translation;
         push.color = obj.color;
-        push.transform = obj.transform2d.mat2();
+        push.transform = camera.getProjectionMatrix() * obj.transform.mat4();
 
         vkCmdPushConstants(commandBuffer,
                            pipelineLayout,
