@@ -1,5 +1,5 @@
-#ifndef VCR_GAME_OBJ_HPP
-#define VCR_GAME_OBJ_HPP
+#ifndef VCR_2D_OBJ_HPP
+#define VCR_2D_OBJ_HPP
 
 #include "vcr_model.hpp"
 
@@ -27,18 +27,18 @@ struct Transform2dComponent {
     }
 };
 
-class GameObject {
+class Object2D {
 public:
     using id_t = unsigned int;
 
-    GameObject(const GameObject&) = delete;
-    GameObject& operator=(const GameObject&) = delete;
-    GameObject(GameObject&&) = default;
-    GameObject& operator=(GameObject&&) = default;
+    Object2D(const Object2D&) = delete;
+    Object2D& operator=(const Object2D&) = delete;
+    Object2D(Object2D&&) = default;
+    Object2D& operator=(Object2D&&) = default;
 
-    static GameObject createGameObject() {
+    static Object2D createObject2D() {
         static id_t currentId = 0;
-        return GameObject(currentId++);
+        return Object2D(currentId++);
     }
 
     id_t getId() const { return id; }
@@ -49,10 +49,10 @@ public:
     RigidBody2dComponent rigidBody2d{};
 
 private:
-    GameObject(id_t objId) : id(objId) {}
+    Object2D(id_t objId) : id(objId) {}
 
     id_t id;
 };
 } // namespace vcr
 
-#endif // VCR_GAME_OBJ_HPP
+#endif // VCR_2D_OBJ_HPP

@@ -2,7 +2,7 @@
 #define VCR_APP_HPP
 
 #include "vcr_device.hpp"
-#include "vcr_game_obj.hpp"
+#include "vcr_2d_obj.hpp"
 #include "vcr_renderer.hpp"
 #include "vcr_window.hpp"
 
@@ -19,7 +19,7 @@ private:
     Device device{window};
     Renderer renderer{window, device};
 
-    std::vector<GameObject> gameObjects;
+    std::vector<Object2D> objects2D;
     
 public:
     App();
@@ -28,7 +28,7 @@ public:
     App& operator=(const App &) = delete;
     void run();
 private:
-    void loadGameObjects();
+    void loadObject2Ds();
 };
 }
 

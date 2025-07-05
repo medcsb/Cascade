@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 
-#include "vcr_game_obj.hpp"
+#include "vcr_2d_obj.hpp"
 #include <vector>
 
 namespace vcr {
@@ -48,14 +48,14 @@ public:
     const float strengthGravity;
     GravityPhysicsSystem(float strength) : strengthGravity(strength) {}
 
-    void update(std::vector<GameObject>& objs, float dt, unsigned int substeps = 1) {
+    void update(std::vector<Object2D>& objs, float dt, unsigned int substeps = 1) {
         const float stepDelta = dt / substeps;
         for (size_t i = 0; i < substeps; ++i) {
             stepSimulation(objs, stepDelta);
         }
     }
 
-    glm::vec2 computeForce(const GameObject& fromObj, const GameObject& toObj) const {
+    glm::vec2 computeForce(const Object2D& fromObj, const Object2D& toObj) const {
         auto offset = fromObj.transform2d.translation - toObj.transform2d.translation;
         float distanceSquared = glm::dot(offset, offset);
         if (distanceSquared < 0.00000001f) {
@@ -67,7 +67,7 @@ public:
     }
 
 private:
-    void stepSimulation(std::vector<GameObject>& physicsObjs, float dt) {
+    void stepSimulation(std::vector<Object2D>& physicsObjs, float dt) {
         for (auto iterA = physicsObjs.begin(); iterA != physicsObjs.end(); ++iterA) {
             auto& objA = *iterA;
             for (auto iterB = iterA; iterB != physicsObjs.end(); ++iterB) {
@@ -89,8 +89,8 @@ private:
 class Vec2FieldSystem {
 public:
     void update(const GravityPhysicsSystem& physicsSystem,
-                std::vector<GameObject>& physicsObjs,
-                std::vector<GameObject>& vectorField) {
+                std::vector<Object2D>& physicsObjs,
+                std::vector<Object2D>& vectorField) {
         // For each field line we caluclate the net graviation force for that point in space
         for (auto& vf : vectorField) {
             glm::vec2 direction{};

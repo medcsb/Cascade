@@ -60,11 +60,11 @@ void SimpleRenderSystem::createPipeline(VkRenderPass renderPass) {
         device, vertShaderPath, fragShaderPath, pipelineConfig);
 }
 
-void SimpleRenderSystem::renderGameObjects(VkCommandBuffer commandBuffer,
-                                           std::vector<GameObject>& gameObjects) {
+void SimpleRenderSystem::renderObject2Ds(VkCommandBuffer commandBuffer,
+                                           std::vector<Object2D>& objects2D) {
     pipeline->bind(commandBuffer);
 
-    for (auto& obj : gameObjects) {
+    for (auto& obj : objects2D) {
         obj.transform2d.rotation = glm::mod(obj.transform2d.rotation + 0.01f, glm::two_pi<float>());
 
         SimplePushConstantData push{};

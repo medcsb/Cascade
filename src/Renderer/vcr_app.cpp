@@ -16,7 +16,7 @@ const std::string fragShaderPath = "shaders/shader.frag.spv";
 
 namespace vcr {
 
-std::vector<GameObject> createPhysicsObjects(Device& device) {
+std::vector<Object2D> createPhysicsObjects(Device& device) {
     // create some models
     std::shared_ptr<Model> squareModel = createSquareModel(
         device,
@@ -24,15 +24,15 @@ std::vector<GameObject> createPhysicsObjects(Device& device) {
     std::shared_ptr<Model> circleModel = createCircleModel(device, 64);
 
     // create physics objects
-    std::vector<GameObject> physicsObjects{};
-    auto red = GameObject::createGameObject();
+    std::vector<Object2D> physicsObjects{};
+    auto red = Object2D::createObject2D();
     red.transform2d.scale = glm::vec2{.05f};
     red.transform2d.translation = {.5f, .5f};
     red.color = {1.f, 0.f, 0.f};
     red.rigidBody2d.velocity = {-.5f, .0f};
     red.model = circleModel;
     physicsObjects.push_back(std::move(red));
-    auto blue = GameObject::createGameObject();
+    auto blue = Object2D::createObject2D();
     blue.transform2d.scale = glm::vec2{.05f};
     blue.transform2d.translation = {-.45f, -.25f};
     blue.color = {0.f, 0.f, 1.f};
@@ -43,16 +43,16 @@ std::vector<GameObject> createPhysicsObjects(Device& device) {
     return physicsObjects;
 }
 
-std::vector<GameObject> createVectorField(Device& device) {
+std::vector<Object2D> createVectorField(Device& device) {
     std::shared_ptr<Model> squareModel = createSquareModel(
         device,
         {.5f, .0f}); // offset model by .5 so rotation occurs at edge rather than center of square
     // create vector field
-    std::vector<GameObject> vectorField{};
+    std::vector<Object2D> vectorField{};
     int gridCount = 40;
     for (int i = 0; i < gridCount; i++) {
         for (int j = 0; j < gridCount; j++) {
-            auto vf = GameObject::createGameObject();
+            auto vf = Object2D::createObject2D();
             vf.transform2d.scale = glm::vec2(0.005f);
             vf.transform2d.translation = {-1.0f + (i + 0.5f) * 2.0f / gridCount,
                                           -1.0f + (j + 0.5f) * 2.0f / gridCount};
@@ -65,15 +65,15 @@ std::vector<GameObject> createVectorField(Device& device) {
 }
 
 App::App() {
-    loadGameObjects();
+    loadObject2Ds();
 }
 App::~App() {
 }
 
 void App::run() {
 
-    std::vector<GameObject> physicsObjects = createPhysicsObjects(device);
-    std::vector<GameObject> vectorField = createVectorField(device);
+    std::vector<Object2D> physicsObjects = createPhysicsObjects(device);
+    std::vector<Object2D> vectorField = createVectorField(device);
 
     GravityPhysicsSystem gravitySystem{0.81f};
     Vec2FieldSystem vecFieldSystem{};
@@ -88,8 +88,8 @@ void App::run() {
             vecFieldSystem.update(gravitySystem, physicsObjects, vectorField);
 
             renderer.beginSwapChainRenderPass(commandBuffer);
-            simpleRenderSystem.renderGameObjects(commandBuffer, physicsObjects);
-            simpleRenderSystem.renderGameObjects(commandBuffer, vectorField);
+            simpleRenderSystem.renderObject2Ds(commandBuffer, physicsObjects);
+            simpleRenderSystem.renderObject2Ds(commandBuffer, vectorField);
             renderer.endSwapChainRenderPass(commandBuffer);
             renderer.endFrame();
         }
@@ -97,20 +97,20 @@ void App::run() {
     vkDeviceWaitIdle(device.device());
 }
 
-void App::loadGameObjects() {
+void App::loadObject2Ds() {
     std::vector<Model::Vertex> vertices{{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
                                         {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
                                         {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}};
     auto model = std::make_shared<Model>(device, vertices);
 
-    auto triangle = GameObject::createGameObject();
+    auto triangle = Object2D::createObject2D();
     triangle.model = model;
     triangle.color = {.1f, .8f, .1f};
     triangle.transform2d.translation.x = .2f;
     triangle.transform2d.scale = {2.f, .5f};
     triangle.transform2d.rotation = .25f * glm::two_pi<float>();
 
-    gameObjects.push_back(std::move(triangle));
+    objects2D.push_back(std::move(triangle));
 }
 
 } // namespace vcr
