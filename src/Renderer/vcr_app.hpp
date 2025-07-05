@@ -1,12 +1,10 @@
 #ifndef VCR_APP_HPP
 #define VCR_APP_HPP
 
-#include "vcr_window.hpp"
-#include "vcr_pipeline.hpp"
 #include "vcr_device.hpp"
-#include "vcr_swap_chain.hpp"
-#include "vcr_model.hpp"
 #include "vcr_game_obj.hpp"
+#include "vcr_renderer.hpp"
+#include "vcr_window.hpp"
 
 #include <memory>
 #include <vector>
@@ -19,11 +17,10 @@ class App {
 private:
     Window window{WIDTH, HEIGHT, "Vulkan App"};
     Device device{window};
-    std::unique_ptr<SwapChain> swapChain;
-    std::unique_ptr<Pipeline> pipeline;
-    VkPipelineLayout pipelineLayout;
-    std::vector<VkCommandBuffer> commandBuffers;
+    Renderer renderer{window, device};
+
     std::vector<GameObject> gameObjects;
+    
 public:
     App();
     ~App();
@@ -31,15 +28,7 @@ public:
     App& operator=(const App &) = delete;
     void run();
 private:
-    void createPipelineLayout();
-    void createPipeline();
-    void createCommandBuffers();
-    void freeCommandBuffers();
-    void drawFrame();
     void loadGameObjects();
-    void recreateSwapChain();
-    void recordCommandBuffer(int imgIndex);
-    void renderGameObjects(VkCommandBuffer commandBuffer);
 };
 }
 

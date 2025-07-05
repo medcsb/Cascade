@@ -15,12 +15,10 @@ struct Transform2dComponent {
     glm::mat2 mat2() {
         const float sin = glm::sin(rotation);
         const float cos = glm::cos(rotation);
-        glm::mat2 rotMat = {{cos, sin},
-                                  {-sin, cos}};
-        glm::mat2 scaleMat = {{scale.x, 0.0f},
-                               {0.0f, scale.y}};
-        //return rotMat * scaleMat;
-        return scaleMat * rotMat;
+        glm::mat2 rotMat = {{cos, sin}, {-sin, cos}};
+        glm::mat2 scaleMat = {{scale.x, 0.0f}, {0.0f, scale.y}};
+        // return rotMat * scaleMat;
+        return rotMat * scaleMat;
     }
 };
 
@@ -40,14 +38,15 @@ public:
 
     id_t getId() const { return id; }
 
-    std::shared_ptr<Model> model;
-    glm::vec3 color;
-    Transform2dComponent transform2d;
+    std::shared_ptr<Model> model{};
+    glm::vec3 color{};
+    Transform2dComponent transform2d{};
+
 private:
     GameObject(id_t objId) : id(objId) {}
 
     id_t id;
 };
-}
+} // namespace vcr
 
 #endif // VCR_GAME_OBJ_HPP
