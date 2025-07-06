@@ -29,8 +29,9 @@ void App::run() {
     while (!window.shouldClose()) {
         glfwPollEvents();
         float aspect = renderer.getAspectRatio();
-        camera.setOrthographicProjection(
-        -aspect, aspect, -1.0f, 1.0f, -1.0f, 1.0f);
+        //camera.setOrthographicProjection(
+        //-aspect, aspect, -1.0f, 1.0f, -1.0f, 1.0f);
+        camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 10.0f);
         if (auto commandBuffer = renderer.beginFrame()) {
             renderer.beginSwapChainRenderPass(commandBuffer);
             simpleRenderSystem.renderObjects(commandBuffer, objects, camera);
@@ -96,7 +97,7 @@ void App::loadObjects() {
     std::shared_ptr<Model> model = createCubeModel(device, glm::vec3(0.0f, 0.0f, 0.0f));
     Object cube = Object::createObject();
     cube.model = model;
-    cube.transform.translation = glm::vec3(0.0f, 0.0f, 0.5f);
+    cube.transform.translation = glm::vec3(0.0f, 0.0f, 2.5f);
     cube.transform.scale = glm::vec3(0.5f, 0.5f, 0.5f);
     objects.push_back(std::move(cube));
 }
