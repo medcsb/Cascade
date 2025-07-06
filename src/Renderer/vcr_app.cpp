@@ -47,6 +47,7 @@ void App::run() {
 
         float aspect = renderer.getAspectRatio();
         camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 10.0f);
+        //camera.setOrthographicProjection(-aspect, aspect, -1.0f, 1.0f, -1.0f, 10.0f);
         if (auto commandBuffer = renderer.beginFrame()) {
             renderer.beginSwapChainRenderPass(commandBuffer);
             simpleRenderSystem.renderObjects(commandBuffer, objects, camera, frameTime);
