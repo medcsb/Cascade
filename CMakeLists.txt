@@ -67,6 +67,7 @@ add_executable(cascade_engine
 target_include_directories(cascade_engine PRIVATE
     extern/Vulkan-Headers/include
     extern/glm
+    extern/header_libs
     src/Renderer
     src/App
 )
