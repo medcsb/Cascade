@@ -16,14 +16,8 @@ struct TransformComponent {
 
     // Matrix corresponds to translate * Rx * Ry * Rz * scale transformation
     // Rotation convention uses tait-bryan angles with axis order of X, Y, Z
-    glm::mat4 mat4() {
-        glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation);
-        transform = glm::rotate(transform, rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-        transform = glm::rotate(transform, rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-        transform = glm::rotate(transform, rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-        transform = glm::scale(transform, scale);
-        return transform;
-    }
+    glm::mat4 mat4();
+    glm::mat3 normalMatrix();
 };
 
 class Object {
