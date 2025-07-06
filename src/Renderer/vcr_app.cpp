@@ -9,6 +9,7 @@
 #include <glm/gtc/constants.hpp>
 
 #include <array>
+#include <chrono>
 #include <stdexcept>
 
 const std::string vertShaderPath = "shaders/shader.vert.spv";
@@ -25,16 +26,25 @@ App::~App() {
 void App::run() {
     SimpleRenderSystem simpleRenderSystem{device, renderer.getSwapChainRenderPass()};
     Camera camera{};
+
+    auto currentTime = std::chrono::high_resolution_clock::now();
     
     while (!window.shouldClose()) {
         glfwPollEvents();
+
+        auto newTime = std::chrono::high_resolution_clock::now();
+        float frameTime =
+            std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime)
+                .count();
+        currentTime = newTime;
+
         float aspect = renderer.getAspectRatio();
         //camera.setOrthographicProjection(
         //-aspect, aspect, -1.0f, 1.0f, -1.0f, 1.0f);
         camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 10.0f);
         if (auto commandBuffer = renderer.beginFrame()) {
             renderer.beginSwapChainRenderPass(commandBuffer);
-            simpleRenderSystem.renderObjects(commandBuffer, objects, camera);
+            simpleRenderSystem.renderObjects(commandBuffer, objects, camera, frameTime);
             renderer.endSwapChainRenderPass(commandBuffer);
             renderer.endFrame();
         }

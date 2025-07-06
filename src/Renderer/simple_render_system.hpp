@@ -21,7 +21,8 @@ public:
 
     void renderObjects(VkCommandBuffer commandBuffer,
                        std::vector<Object>& objects,
-                       const Camera& camera);
+                       const Camera& camera,
+                       float dt);
 
 private:
     void createPipelineLayout();
