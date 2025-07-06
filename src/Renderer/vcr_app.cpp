@@ -59,11 +59,11 @@ void App::run() {
 }
 
 void App::loadObjects() {
-    std::shared_ptr<Model> model = Model::createModelFromFile(device, "assets/models/xyzrgb_dragon.obj");
+    std::shared_ptr<Model> model = Model::createModelFromFile(device, "assets/models/stanford-bunny.obj");
     Object obj3D = Object::createObject();
     obj3D.model = model;
     obj3D.transform.translation = glm::vec3(0.0f, 0.0f, 2.5f);
-    obj3D.transform.scale = glm::vec3(0.01f);
+    obj3D.transform.scale = glm::vec3(3.0f);
     objects.push_back(std::move(obj3D));
 }
 
