@@ -29,6 +29,7 @@ public:
     bool shouldClose() const { return glfwWindowShouldClose(window); }
     VkExtent2D getExtent() { return {static_cast<uint32_t>(width), static_cast<uint32_t>(height)}; }
     bool wasWindowResized() { return framebufferResized; }
+    GLFWwindow* getGLFWWindow() const { return window; }
     void resetWindowResizedFlag() { framebufferResized = false; }
 
     void createWindowSurface(VkInstance instance, VkSurfaceKHR* surface);

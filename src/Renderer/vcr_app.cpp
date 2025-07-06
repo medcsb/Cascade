@@ -1,6 +1,7 @@
 #include "vcr_app.hpp"
 #include "vcr_camera.hpp"
 #include "simple_render_system.hpp"
+#include "keyboard_movement_controller.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -27,6 +28,9 @@ void App::run() {
     SimpleRenderSystem simpleRenderSystem{device, renderer.getSwapChainRenderPass()};
     Camera camera{};
 
+    Object viewerObject = Object::createObject();
+    KeyboardMovementController cameraController{};
+
     auto currentTime = std::chrono::high_resolution_clock::now();
     
     while (!window.shouldClose()) {
@@ -38,9 +42,10 @@ void App::run() {
                 .count();
         currentTime = newTime;
 
+        cameraController.moveInPlaneXZ(window.getGLFWWindow(), frameTime, viewerObject);
+        camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
+
         float aspect = renderer.getAspectRatio();
-        //camera.setOrthographicProjection(
-        //-aspect, aspect, -1.0f, 1.0f, -1.0f, 1.0f);
         camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 10.0f);
         if (auto commandBuffer = renderer.beginFrame()) {
             renderer.beginSwapChainRenderPass(commandBuffer);
