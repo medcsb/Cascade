@@ -6,14 +6,56 @@
 namespace vcr {
 
 void KeyboardMovementController::moveInPlaneXZ(GLFWwindow* window, float dt, Object& object) {
-    glm::vec3 rotate{0};
-    if (glfwGetKey(window, keys.lookRight) == GLFW_PRESS) rotate.y += 1.f;
-    if (glfwGetKey(window, keys.lookLeft) == GLFW_PRESS) rotate.y -= 1.f;
-    if (glfwGetKey(window, keys.lookUp) == GLFW_PRESS) rotate.x += 1.f;
-    if (glfwGetKey(window, keys.lookDown) == GLFW_PRESS) rotate.x -= 1.f;
+    // Toggle FPS mode
+    bool fpsKeyCurrentlyPressed = glfwGetKey(window, keys.toggleFPS) == GLFW_PRESS;
+    if (fpsKeyCurrentlyPressed && !fpsKeyPressed) {
+        fpsMode = !fpsMode;
+        if (fpsMode) {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            firstMouse = true;
+        } else {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        }
+    }
+    fpsKeyPressed = fpsKeyCurrentlyPressed;
 
+    // Handle rotation based on mode
+    glm::vec3 rotate{0};
+    
+    if (fpsMode) {
+        // Mouse look for FPS mode
+        double mouseX, mouseY;
+        glfwGetCursorPos(window, &mouseX, &mouseY);
+        
+        if (firstMouse) {
+            lastMouseX = mouseX;
+            lastMouseY = mouseY;
+            firstMouse = false;
+        }
+        
+        double deltaX = mouseX - lastMouseX;
+        double deltaY = lastMouseY - mouseY; // Reversed since y-coordinates go from bottom to top
+        
+        lastMouseX = mouseX;
+        lastMouseY = mouseY;
+        
+        rotate.y += static_cast<float>(deltaX) * mouseSensitivity;
+        rotate.x += static_cast<float>(deltaY) * mouseSensitivity;
+    } else {
+        // Arrow key look for normal mode
+        if (glfwGetKey(window, keys.lookRight) == GLFW_PRESS) rotate.y += 1.f;
+        if (glfwGetKey(window, keys.lookLeft) == GLFW_PRESS) rotate.y -= 1.f;
+        if (glfwGetKey(window, keys.lookUp) == GLFW_PRESS) rotate.x += 1.f;
+        if (glfwGetKey(window, keys.lookDown) == GLFW_PRESS) rotate.x -= 1.f;
+        
+        if (glm::dot(rotate, rotate) > std::numeric_limits<float>::epsilon()) {
+            rotate = lookSpeed * dt * glm::normalize(rotate);
+        }
+    }
+
+    // Apply rotation
     if (glm::dot(rotate, rotate) > std::numeric_limits<float>::epsilon()) {
-        object.transform.rotation += lookSpeed * dt * glm::normalize(rotate);
+        object.transform.rotation += rotate;
     }
 
     // limit pitch values between about +/- 85ish degrees
