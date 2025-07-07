@@ -107,7 +107,7 @@ void App::run() {
 
 void App::loadObjects() {
     std::shared_ptr<Model> model =
-        Model::createModelFromFile(device, "assets/models/smooth_vase.obj");
+        Model::createModelFromFile(device, "assets/models/dragon.obj");
     Object obj3D = Object::createObject();
     obj3D.model = model;
     obj3D.transform.translation = glm::vec3(0.0f, 0.0f, 2.5f);
