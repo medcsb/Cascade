@@ -50,6 +50,8 @@ void Camera::setViewDirection(const glm::vec3& position, const glm::vec3& direct
     viewMatrix[3][0] = -glm::dot(u, position);
     viewMatrix[3][1] = -glm::dot(v, position);
     viewMatrix[3][2] = -glm::dot(w, position);
+
+    inverseViewMatrix = glm::inverse(viewMatrix);
 }
 
 void Camera::setViewTarget(const glm::vec3& position, const glm::vec3& target, const glm::vec3& up) {
@@ -83,5 +85,7 @@ void Camera::setViewYXZ(const glm::vec3& position, const glm::vec3& rotation) {
     viewMatrix[3][0] = -glm::dot(u, position);
     viewMatrix[3][1] = -glm::dot(v, position);
     viewMatrix[3][2] = -glm::dot(w, position);
+
+    inverseViewMatrix = glm::inverse(viewMatrix);
 }
 } // namespace vcr

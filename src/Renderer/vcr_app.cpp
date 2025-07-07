@@ -21,7 +21,9 @@ const std::string fragShaderPath = "shaders/shader.frag.spv";
 namespace vcr {
 
 struct GlobalUbo {
-    glm::mat4 projectionView{1.0f};
+    glm::mat4 projectionMatrix{1.0f};
+    glm::mat4 viewMatrix{1.0f};
+    glm::mat4 inverseViewMatrix{1.0f};
     glm::vec4 ambientLightColor{1.0f, 1.0f, 1.0f, 0.02f};
     glm::vec4 lightColor{1.0f}; // w is intensity
     glm::vec3 lightPosition{-1.0f};
@@ -95,7 +97,9 @@ void App::run() {
                 frameIndex, frameTime, commandBuffer, camera, globalDescriptorSets[frameIndex]};
             // update
             GlobalUbo ubo{};
-            ubo.projectionView = camera.getProjectionMatrix() * camera.getViewMatrix();
+            ubo.projectionMatrix = camera.getProjectionMatrix();
+            ubo.viewMatrix =  camera.getViewMatrix();
+            ubo.inverseViewMatrix = camera.getInverseViewMatrix();
             uboBuffers[frameIndex]->writeToBuffer(&ubo);
             uboBuffers[frameIndex]->flush();
             // render
