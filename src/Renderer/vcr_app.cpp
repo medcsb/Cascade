@@ -26,23 +26,44 @@ struct GlobalUbo {
 };
 
 App::App() {
+    globalPool =
+        DescriptorPool::Builder(device)
+            .setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT)
+            .build();
     loadObjects();
 }
 App::~App() {
+    globalPool = nullptr;
 }
 
 void App::run() {
-    std::vector<std::unique_ptr<Buffer>> globalUboBuffers(SwapChain::MAX_FRAMES_IN_FLIGHT);
-    for (size_t i = 0; i < globalUboBuffers.size(); i++) {
-        globalUboBuffers[i] = std::make_unique<Buffer>(device,
-                                                       sizeof(GlobalUbo),
-                                                       1,
-                                                       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                                       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-        globalUboBuffers[i]->map();
+    std::vector<std::unique_ptr<Buffer>> uboBuffers(SwapChain::MAX_FRAMES_IN_FLIGHT);
+    for (size_t i = 0; i < uboBuffers.size(); i++) {
+        uboBuffers[i] = std::make_unique<Buffer>(device,
+                                                 sizeof(GlobalUbo),
+                                                 1,
+                                                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+        uboBuffers[i]->map();
     }
 
-    SimpleRenderSystem simpleRenderSystem{device, renderer.getSwapChainRenderPass()};
+    auto globalSetLayout =
+        DescriptorSetLayout::Builder(device)
+            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+            .build();
+
+    std::vector<VkDescriptorSet> globalDescriptorSets(SwapChain::MAX_FRAMES_IN_FLIGHT);
+
+    for (size_t i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
+        auto bufferInfo = uboBuffers[i]->descriptorInfo();
+        DescriptorWriter(*globalSetLayout, *globalPool)
+            .writeBuffer(0, &bufferInfo)
+            .build(globalDescriptorSets[i]);
+    }
+
+    SimpleRenderSystem simpleRenderSystem{
+        device, renderer.getSwapChainRenderPass(), globalSetLayout->getDescriptorSetLayout()};
     Camera camera{};
 
     Object viewerObject = Object::createObject();
@@ -67,12 +88,13 @@ void App::run() {
         // camera.setOrthographicProjection(-aspect, aspect, -1.0f, 1.0f, -1.0f, 10.0f);
         if (auto commandBuffer = renderer.beginFrame()) {
             int frameIndex = renderer.getFrameIndex();
-            FrameInfo frameInfo{frameIndex, frameTime, commandBuffer, camera};
+            FrameInfo frameInfo{
+                frameIndex, frameTime, commandBuffer, camera, globalDescriptorSets[frameIndex]};
             // update
             GlobalUbo ubo{};
             ubo.projectionView = camera.getProjectionMatrix() * camera.getViewMatrix();
-            globalUboBuffers[frameIndex]->writeToBuffer(&ubo);
-            globalUboBuffers[frameIndex]->flush();
+            uboBuffers[frameIndex]->writeToBuffer(&ubo);
+            uboBuffers[frameIndex]->flush();
             // render
             renderer.beginSwapChainRenderPass(commandBuffer);
             simpleRenderSystem.renderObjects(frameInfo, objects, frameTime);
@@ -84,7 +106,8 @@ void App::run() {
 }
 
 void App::loadObjects() {
-    std::shared_ptr<Model> model = Model::createModelFromFile(device, "assets/models/dragon.obj");
+    std::shared_ptr<Model> model =
+        Model::createModelFromFile(device, "assets/models/smooth_vase.obj");
     Object obj3D = Object::createObject();
     obj3D.model = model;
     obj3D.transform.translation = glm::vec3(0.0f, 0.0f, 2.5f);

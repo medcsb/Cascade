@@ -5,6 +5,7 @@
 #include "vcr_obj.hpp"
 #include "vcr_renderer.hpp"
 #include "vcr_window.hpp"
+#include "vcr_descriptor.hpp"
 
 #include <memory>
 #include <vector>
@@ -19,6 +20,7 @@ private:
     Device device{window};
     Renderer renderer{window, device};
 
+    std::unique_ptr<DescriptorPool> globalPool{};
     std::vector<Object> objects;
     
 public:
