@@ -20,9 +20,9 @@ const std::string fragShaderPath = "shaders/shader.frag.spv";
 
 namespace vcr {
 
-struct GlobalUniformBufferObject {
+struct GlobalUbo {
     glm::mat4 projectionView{1.0f};
-    glm::vec3 lightDirection = glm::vec3(1.0f, -3.0f, -1.0f);
+    glm::vec3 lightDirection = glm::normalize(glm::vec3{1.0f, -3.0f, -1.0f});
 };
 
 App::App() {
@@ -32,14 +32,14 @@ App::~App() {
 }
 
 void App::run() {
-    std::vector<std::unique_ptr<Buffer>> globalUBOs(SwapChain::MAX_FRAMES_IN_FLIGHT);
-    for (size_t i = 0; i < globalUBOs.size(); i++) {
-        globalUBOs[i] = std::make_unique<Buffer>(device,
-                                                 sizeof(GlobalUniformBufferObject),
-                                                 1,
-                                                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-        globalUBOs[i]->map();
+    std::vector<std::unique_ptr<Buffer>> globalUboBuffers(SwapChain::MAX_FRAMES_IN_FLIGHT);
+    for (size_t i = 0; i < globalUboBuffers.size(); i++) {
+        globalUboBuffers[i] = std::make_unique<Buffer>(device,
+                                                       sizeof(GlobalUbo),
+                                                       1,
+                                                       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                                       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+        globalUboBuffers[i]->map();
     }
 
     SimpleRenderSystem simpleRenderSystem{device, renderer.getSwapChainRenderPass()};
@@ -67,15 +67,12 @@ void App::run() {
         // camera.setOrthographicProjection(-aspect, aspect, -1.0f, 1.0f, -1.0f, 10.0f);
         if (auto commandBuffer = renderer.beginFrame()) {
             int frameIndex = renderer.getFrameIndex();
-            FrameInfo frameInfo{.frameIndex = frameIndex,
-                                .frameTime = frameTime,
-                                .commandBuffer = commandBuffer,
-                                .camera = camera};
+            FrameInfo frameInfo{frameIndex, frameTime, commandBuffer, camera};
             // update
-            GlobalUniformBufferObject ubo{};
+            GlobalUbo ubo{};
             ubo.projectionView = camera.getProjectionMatrix() * camera.getViewMatrix();
-            globalUBOs[frameIndex]->writeToIndex(&ubo, frameIndex);
-            globalUBOs[frameIndex]->flush();
+            globalUboBuffers[frameIndex]->writeToBuffer(&ubo);
+            globalUboBuffers[frameIndex]->flush();
             // render
             renderer.beginSwapChainRenderPass(commandBuffer);
             simpleRenderSystem.renderObjects(frameInfo, objects, frameTime);
