@@ -78,7 +78,7 @@ void SimpleRenderSystem::renderObjects(FrameInfo& frameInfo,
                             nullptr);
 
     for (auto& obj : objects) {
-        obj.transform.rotation.y = glm::mod(obj.transform.rotation.y + dt, glm::two_pi<float>());
+        //obj.transform.rotation.y = glm::mod(obj.transform.rotation.y + dt, glm::two_pi<float>());
         // obj.transform.rotation.x =
         //     glm::mod(obj.transform.rotation.x + 0.1f * dt, glm::two_pi<float>());
         // obj.transform.rotation.z =

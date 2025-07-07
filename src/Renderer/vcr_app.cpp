@@ -52,7 +52,7 @@ void App::run() {
 
     auto globalSetLayout =
         DescriptorSetLayout::Builder(device)
-            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
             .build();
 
     std::vector<VkDescriptorSet> globalDescriptorSets(SwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -116,6 +116,14 @@ void App::loadObjects() {
     obj3D.transform.translation = glm::vec3(0.0f, 0.0f, 0.0f);
     obj3D.transform.scale = glm::vec3(1.0f, -1.0f, 1.0f); // Flip the model vertically
     objects.push_back(std::move(obj3D));
+    // load the floor
+    model = Model::createModelFromFile(device, "assets/models/quad.obj");
+    Object floor = Object::createObject();
+    floor.model = model;
+    floor.transform.translation = glm::vec3(0.0f, 0.7f, 0.0f);
+    floor.transform.scale = glm::vec3(10.0f, 1.0f, 10.0f); // Scale the floor
+    floor.color = glm::vec3(1.0f, 1.0f, 1.0f); // Set the floor color to gray
+    objects.push_back(std::move(floor));
 }
 
 } // namespace vcr
