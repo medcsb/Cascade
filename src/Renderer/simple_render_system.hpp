@@ -3,6 +3,7 @@
 
 #include "vcr_camera.hpp"
 #include "vcr_device.hpp"
+#include "vcr_frame_info.hpp"
 #include "vcr_obj.hpp"
 #include "vcr_pipeline.hpp"
 
@@ -19,10 +20,7 @@ public:
     SimpleRenderSystem(const SimpleRenderSystem&) = delete;
     SimpleRenderSystem& operator=(const SimpleRenderSystem&) = delete;
 
-    void renderObjects(VkCommandBuffer commandBuffer,
-                       std::vector<Object>& objects,
-                       const Camera& camera,
-                       float dt);
+    void renderObjects(FrameInfo& frameInfo, std::vector<Object>& objects, float dt);
 
 private:
     void createPipelineLayout();

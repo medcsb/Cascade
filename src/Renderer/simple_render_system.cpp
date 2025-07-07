@@ -58,35 +58,33 @@ void SimpleRenderSystem::createPipeline(VkRenderPass renderPass) {
     pipeline = std::make_unique<Pipeline>(device, vertShaderPath, fragShaderPath, pipelineConfig);
 }
 
-void SimpleRenderSystem::renderObjects(VkCommandBuffer commandBuffer,
+void SimpleRenderSystem::renderObjects(FrameInfo& frameInfo,
                                        std::vector<Object>& objects,
-                                       const Camera& camera,
                                        float dt) {
-    pipeline->bind(commandBuffer);
+    pipeline->bind(frameInfo.commandBuffer);
 
-    glm::mat4 projectionView = camera.getProjectionMatrix() * camera.getViewMatrix();
+    glm::mat4 projectionView = frameInfo.camera.getProjectionMatrix() * frameInfo.camera.getViewMatrix();
 
     for (auto& obj : objects) {
-        obj.transform.rotation.y =
-            glm::mod(obj.transform.rotation.y + dt, glm::two_pi<float>());
-        //obj.transform.rotation.x =
-        //    glm::mod(obj.transform.rotation.x + 0.1f * dt, glm::two_pi<float>());
-        //obj.transform.rotation.z =
-        //    glm::mod(obj.transform.rotation.z + 0.2f * dt, glm::two_pi<float>());
+        obj.transform.rotation.y = glm::mod(obj.transform.rotation.y + dt, glm::two_pi<float>());
+        // obj.transform.rotation.x =
+        //     glm::mod(obj.transform.rotation.x + 0.1f * dt, glm::two_pi<float>());
+        // obj.transform.rotation.z =
+        //     glm::mod(obj.transform.rotation.z + 0.2f * dt, glm::two_pi<float>());
 
         SimplePushConstantData push{};
         auto modelMatrix = obj.transform.mat4();
         push.transform = projectionView * modelMatrix;
         push.normalMatrix = obj.transform.normalMatrix();
 
-        vkCmdPushConstants(commandBuffer,
+        vkCmdPushConstants(frameInfo.commandBuffer,
                            pipelineLayout,
                            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                            0,
                            sizeof(SimplePushConstantData),
                            &push);
-        obj.model->bind(commandBuffer);
-        obj.model->draw(commandBuffer);
+        obj.model->bind(frameInfo.commandBuffer);
+        obj.model->draw(frameInfo.commandBuffer);
     }
 }
 
