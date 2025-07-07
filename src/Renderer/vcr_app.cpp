@@ -22,7 +22,9 @@ namespace vcr {
 
 struct GlobalUbo {
     glm::mat4 projectionView{1.0f};
-    glm::vec3 lightDirection = glm::normalize(glm::vec3{1.0f, -3.0f, -1.0f});
+    glm::vec4 ambientLightColor{1.0f, 1.0f, 1.0f, 0.02f};
+    glm::vec4 lightColor{1.0f}; // w is intensity
+    glm::vec3 lightPosition{-1.0f};
 };
 
 App::App() {
@@ -67,6 +69,7 @@ void App::run() {
     Camera camera{};
 
     Object viewerObject = Object::createObject();
+    viewerObject.transform.translation.z = -2.5f; // Move the camera back
     KeyboardMovementController cameraController{};
 
     auto currentTime = std::chrono::high_resolution_clock::now();
@@ -110,7 +113,7 @@ void App::loadObjects() {
         Model::createModelFromFile(device, "assets/models/dragon.obj");
     Object obj3D = Object::createObject();
     obj3D.model = model;
-    obj3D.transform.translation = glm::vec3(0.0f, 0.0f, 2.5f);
+    obj3D.transform.translation = glm::vec3(0.0f, 0.0f, 0.0f);
     obj3D.transform.scale = glm::vec3(1.0f, -1.0f, 1.0f); // Flip the model vertically
     objects.push_back(std::move(obj3D));
 }
