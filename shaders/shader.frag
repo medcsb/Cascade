@@ -39,7 +39,7 @@ void main() {
 
     // --- Specular ---
     vec3 reflectDir = reflect(-lightDir, surfaceNormal); // reflection direction
-    float specStrength = 0.5;       // adjust as needed
+    float specStrength = 1.5;       // adjust as needed
     float shininess = 32.0;         // higher = smaller, sharper specular
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
     vec3 specularLight = specStrength * spec * lightColor;

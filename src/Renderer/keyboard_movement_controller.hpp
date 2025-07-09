@@ -13,7 +13,7 @@ public:
         int moveForward = GLFW_KEY_W;
         int moveBackward = GLFW_KEY_S;
         int moveUp = GLFW_KEY_SPACE;
-        int moveDown = GLFW_KEY_LEFT_CONTROL;
+        int moveDown = GLFW_KEY_LEFT_ALT;
         int lookLeft = GLFW_KEY_LEFT;
         int lookRight = GLFW_KEY_RIGHT;
         int lookUp = GLFW_KEY_UP;
