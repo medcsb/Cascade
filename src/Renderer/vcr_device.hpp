@@ -71,6 +71,7 @@ public:
     VkDevice getDevice() const {return device;}
     VkPhysicalDevice getPhysicalDevice() const {return physicalDevice;}
     VkSurfaceKHR getSurface() const {return surface;}
+    GLFWwindow* getWindow() const {return window.getWindow();}
     
     static QueueFamilyIndices findQueueFamilies(VkPhysicalDevice physicalDevice, 
                                                 VkSurfaceKHR surface);

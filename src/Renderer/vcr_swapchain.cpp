@@ -5,11 +5,20 @@
 
 namespace vcr {
 
-SwapChain::SwapChain(Window &window, Device &device)
-    : device(device), window(window) {}
+SwapChain::SwapChain(Device &device)
+    : device(device) {}
 
 SwapChain::~SwapChain() {
+    for (size_t i = 0; i < swapChainImageViews.size(); i++) {
+        vkDestroyImageView(device.getDevice(), swapChainImageViews[i], nullptr);
+    }
     vkDestroySwapchainKHR(device.getDevice(), swapChain, nullptr);
+}
+
+void SwapChain::init() {
+    createSwapChain();
+    createImageViews();
+    log();
 }
 
 void SwapChain::createSwapChain() {
@@ -60,7 +69,30 @@ void SwapChain::createSwapChain() {
     vkGetSwapchainImagesKHR(device.getDevice(), swapChain, &imageCount, nullptr);
     swapChainImages.resize(imageCount);
     vkGetSwapchainImagesKHR(device.getDevice(), swapChain, &imageCount, swapChainImages.data());
-    log();
+}
+
+void SwapChain::createImageViews() {
+    swapChainImageViews.resize(imageCount);
+    for (size_t i = 0; i < swapChainImageViews.size(); i++) {
+        VkImageViewCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        createInfo.image = swapChainImages[i];
+        createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        createInfo.format = swapChainImageFormat;
+        createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        createInfo.subresourceRange.baseMipLevel = 0;
+        createInfo.subresourceRange.levelCount = 1;
+        createInfo.subresourceRange.baseArrayLayer = 0;
+        createInfo.subresourceRange.layerCount = 1;
+
+        if (vkCreateImageView(device.getDevice(), &createInfo, nullptr, &swapChainImageViews[i]) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to create image views!");
+        }
+    }
 }
 
 VkSurfaceFormatKHR SwapChain::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats) {
@@ -79,9 +111,7 @@ VkPresentModeKHR SwapChain::chooseSwapPresentMode(const std::vector<VkPresentMod
     for (const auto &presentMode : availablePresentModes) {
         if (presentMode == VK_PRESENT_MODE_MAILBOX_KHR) return presentMode;
     }
-    for (const auto &presentMode : availablePresentModes) {
-        if (presentMode == VK_PRESENT_MODE_FIFO_KHR) return presentMode; // FIFO is guaranteed to be available
-    }
+    return presentMode; // FIFO is guaranteed to be available
 }
 
 VkExtent2D SwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) {
@@ -89,7 +119,8 @@ VkExtent2D SwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilit
         return capabilities.currentExtent;
     }
     int width, height;
-    glfwGetFramebufferSize(window.getWindow(), &width, &height);
+    GLFWwindow* window = device.getWindow();
+    glfwGetFramebufferSize(window, &width, &height);
     VkExtent2D actualExtent = {
         .width = static_cast<uint32_t>(width),
         .height = static_cast<uint32_t>(height),

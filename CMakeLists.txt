@@ -70,7 +70,7 @@ target_include_directories(cascade_engine PRIVATE
     extern/header_libs
     src/Renderer
     src/App
-    src/util
+    src/utils
     src
 )
 

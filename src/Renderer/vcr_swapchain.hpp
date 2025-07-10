@@ -9,6 +9,7 @@ class SwapChain {
 private:
     VkSwapchainKHR swapChain;
     VkFormat swapChainImageFormat;
+    std::vector<VkImageView> swapChainImageViews;
     
     VkSurfaceFormatKHR surfaceFormat;
     VkPresentModeKHR presentMode;
@@ -19,15 +20,21 @@ private:
     std::vector<VkImage> swapChainImages;
 
     Device &device;
-    Window &window;
 
 public:
-    SwapChain(Window &window, Device &device);
+    SwapChain(Device &device);
     ~SwapChain();
 
-    void createSwapChain();
+    void init();
+
+    VkExtent2D getExtent() const {return extent;}
+    VkFormat getImageFormat() const {return swapChainImageFormat;}
+
     static SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
 private:
+
+    void createSwapChain();
+    void createImageViews();
 
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
     VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);

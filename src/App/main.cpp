@@ -7,7 +7,6 @@
 int main() {
     vcr::App app{};
     try {
-        app.init();
         app.run();
     } catch (const std::exception& e) {
         std::cerr << "Exception: " << e.what() << '\n';
