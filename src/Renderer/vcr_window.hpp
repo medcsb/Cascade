@@ -6,38 +6,24 @@
 
 #include <string>
 
-namespace vcr
-{
+namespace vcr {
 
-class Window
-{
+class Window {
 private:
-    int width;
-    int height;
-    bool framebufferResized = false;
-
-    GLFWwindow* window;
+    uint32_t width;
+    uint32_t height;
     std::string windowName;
 
+    GLFWwindow* window;
+
 public:
-    Window(int width, int height, const std::string& name);
+    Window(uint32_t width, uint32_t height, const std::string& name);
     ~Window();
-
-    Window(const Window&) = delete;
-    Window& operator=(const Window&) = delete;
-
-    bool shouldClose() const { return glfwWindowShouldClose(window); }
-    VkExtent2D getExtent() { return {static_cast<uint32_t>(width), static_cast<uint32_t>(height)}; }
-    bool wasWindowResized() { return framebufferResized; }
-    GLFWwindow* getGLFWWindow() const { return window; }
-    void resetWindowResizedFlag() { framebufferResized = false; }
-
-    void createWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
-
-private:
-    void initWindow();
-    static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
+    void init();
+    GLFWwindow* getWindow() {return window;}
+    bool windowShouldClose() {return glfwWindowShouldClose(window);}
+    void pollEvents() {glfwPollEvents();}
 };
-} // namespace vcr
+}
 
 #endif // VCR_WINDOW_HPP

@@ -1,36 +1,27 @@
 #ifndef VCR_APP_HPP
 #define VCR_APP_HPP
 
-#include "vcr_device.hpp"
-#include "vcr_obj.hpp"
 #include "vcr_renderer.hpp"
 #include "vcr_window.hpp"
-#include "vcr_descriptor.hpp"
+#include "vcr_device.hpp"
+#include "vcr_swapchain.hpp"
 
-#include <memory>
-#include <vector>
-
-static constexpr int WIDTH = 800;
-static constexpr int HEIGHT = 600;
+const uint32_t width = 800;
+const uint32_t height = 600;
+const std::string name = "test App";
 
 namespace vcr {
 class App {
 private:
-    Window window{WIDTH, HEIGHT, "Vulkan App"};
+    Window window{width, height, name};
     Device device{window};
-    Renderer renderer{window, device};
-
-    std::unique_ptr<DescriptorPool> globalPool{};
-    std::vector<Object> objects;
-    
+    SwapChain swapChain{window, device};
+    Renderer renderer{window};
 public:
-    App();
-    ~App();
-    App(const App &) = delete;
-    App& operator=(const App &) = delete;
+    void init();
     void run();
 private:
-    void loadObjects();
+    void mainLoop();
 };
 }
 
