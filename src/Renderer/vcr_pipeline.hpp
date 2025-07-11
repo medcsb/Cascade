@@ -20,15 +20,11 @@ struct PipelineConfig {
     VkPipelineDynamicStateCreateInfo dynamicState;
     VkPipelineVertexInputStateCreateInfo vertexInputState;
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyState;
-    VkViewport viewport;
-    VkRect2D scissor;
     VkPipelineViewportStateCreateInfo viewportState;
     VkPipelineRasterizationStateCreateInfo rasterizationState;
     VkPipelineMultisampleStateCreateInfo multisampleState;
     VkPipelineColorBlendAttachmentState colorBlendAttachment;
     VkPipelineColorBlendStateCreateInfo colorBlendState;
-    VkPipelineLayout pipelineLayout;
-    VkRenderPass renderPass;
 };
 
 class Pipeline {
@@ -39,7 +35,7 @@ private:
     VkShaderModule vertShaderModule;
     VkShaderModule fragShaderModule;
 
-    VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+    VkPipelineLayout pipelineLayout;
     VkPipeline graphicsPipeline;
 public:
     Pipeline(Device &device);
@@ -49,32 +45,26 @@ public:
 
     void setExtent(const VkExtent2D &extent) {this->extent = extent;}
 
-    void createGraphicsPipeline(VkRenderPass renderPass);
+    void createGraphicsPipeline(VkRenderPass& renderPass, 
+                                const std::string& vertShaderPath,
+                                const std::string& fragShaderPath);
     std::array<VkShaderModule, 2> createShaderModules(
         const std::string &vertexShaderPath,
         const std::string &fragmentShaderPath);
 
-    static PipelineConfig defaultPipelineConfig(Device &device,
-                                                VkExtent2D& extent,
-                                                VkShaderModule& vertShaderModule,
-                                                VkShaderModule& fragShaderModule,
-                                                VkPipelineLayout& pipelineLayout,
-                                                VkRenderPass& renderPass);
-    static VkViewport createViewport(const VkExtent2D &extent);
-    static VkRect2D createScissor(const VkExtent2D &extent);
+    static PipelineConfig defaultPipelineConfig(PipelineConfig &configInfo);
 private:
     VkShaderModule createShaderModule(const std::vector<char> &code);
-    static std::array<VkPipelineShaderStageCreateInfo, 2> createShaderStages(VkShaderModule vertShaderModule,
-                                                                           VkShaderModule fragShaderModule);
-    static VkPipelineDynamicStateCreateInfo createDynamicState(std::vector<VkDynamicState>& dynamicStates);
-    static VkPipelineVertexInputStateCreateInfo createVertexInputState();
-    static VkPipelineInputAssemblyStateCreateInfo createInputAssemblyState();
-    static VkPipelineViewportStateCreateInfo createViewportState(VkViewport& viewport, VkRect2D& scissor);
-    static VkPipelineRasterizationStateCreateInfo createRasterizationState();
-    static VkPipelineMultisampleStateCreateInfo createMultisampleState();
-    static VkPipelineColorBlendAttachmentState createColorBlendAttachment();
-    static VkPipelineColorBlendStateCreateInfo createColorBlendState(
-    const VkPipelineColorBlendAttachmentState& colorBlendAttachment);
+    static std::array<VkPipelineShaderStageCreateInfo, 2> createShaderStages(VkShaderModule& vertShaderModule,
+                                                                           VkShaderModule& fragShaderModule);
+    static void createDynamicState(PipelineConfig &configInfo);
+    static void createVertexInputState(PipelineConfig &configInfo);
+    static void createInputAssemblyState(PipelineConfig &configInfo);
+    static void createViewportState(PipelineConfig &configInfo);
+    static void createRasterizationState(PipelineConfig &configInfo);
+    static void createMultisampleState(PipelineConfig &configInfo);
+    static void createColorBlendAttachment(PipelineConfig &configInfo);
+    static void createColorBlendState(PipelineConfig &configInfo);
     static VkPipelineLayout createPipelineLayout(Device& device);
 };
 }

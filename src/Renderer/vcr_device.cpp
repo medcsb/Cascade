@@ -92,6 +92,9 @@ void Device::pickPhysicalDevice() {
     vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
     removeUnsuitableDevices(devices);
     physicalDevice = pickBestPhysicalDevice(devices);
+    if (physicalDevice == VK_NULL_HANDLE) {
+        throw std::runtime_error("failed to find a suitable GPU!");
+    }
 }
 
 void Device::createLogicalDevice() {

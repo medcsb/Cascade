@@ -5,10 +5,23 @@
 
 namespace vcr {
 
-SwapChain::SwapChain(Device &device)
-    : device(device) {}
+SwapChain::SwapChain(Device &device, Window& window)
+    : device(device), window(window) {}
 
 SwapChain::~SwapChain() {
+    for (size_t i = 0; i < swapChainFramebuffers.size(); i++) {
+        vkDestroyFramebuffer(device.getDevice(), swapChainFramebuffers[i], nullptr);
+    }
+    for (size_t i = 0; i < swapChainImageViews.size(); i++) {
+        vkDestroyImageView(device.getDevice(), swapChainImageViews[i], nullptr);
+    }
+    vkDestroySwapchainKHR(device.getDevice(), swapChain, nullptr);
+}
+
+void SwapChain::cleanupSwapChain() {
+    for (size_t i = 0; i < swapChainFramebuffers.size(); i++) {
+        vkDestroyFramebuffer(device.getDevice(), swapChainFramebuffers[i], nullptr);
+    }
     for (size_t i = 0; i < swapChainImageViews.size(); i++) {
         vkDestroyImageView(device.getDevice(), swapChainImageViews[i], nullptr);
     }
@@ -21,8 +34,47 @@ void SwapChain::init() {
     log();
 }
 
+void SwapChain::recreateSwapChain(VkRenderPass &renderPass) {
+    int width = 0, height = 0;
+    glfwGetFramebufferSize(window.getWindow(), &width, &height);
+    while (width == 0 || height == 0) {
+        glfwGetFramebufferSize(window.getWindow(), &width, &height);
+        glfwWaitEvents();
+    }
+    vkDeviceWaitIdle(device.getDevice());
+
+    cleanupSwapChain();
+
+    createSwapChain();
+    createImageViews();
+    createFramebuffers(renderPass);
+}
+
+void SwapChain::createFramebuffers(VkRenderPass &renderPass) {
+    swapChainFramebuffers.resize(imageCount);
+
+    for (size_t i = 0; i < swapChainFramebuffers.size(); i++) {
+        VkImageView attachments[] = {
+            swapChainImageViews[i]
+        };
+
+        VkFramebufferCreateInfo framebufferInfo{};
+        framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        framebufferInfo.renderPass = renderPass;
+        framebufferInfo.attachmentCount = 1;
+        framebufferInfo.pAttachments = attachments;
+        framebufferInfo.width = extent.width;
+        framebufferInfo.height = extent.height;
+        framebufferInfo.layers = 1;
+        if (vkCreateFramebuffer(device.getDevice(), &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to create framebuffer!");
+        }
+    }
+}
+
 void SwapChain::createSwapChain() {
-    SwapChainSupportDetails swapChainSupport = SwapChain::querySwapChainSupport(device.getPhysicalDevice(), device.getSurface());
+    SwapChainSupportDetails swapChainSupport = SwapChain::querySwapChainSupport(device.getPhysicalDevice(),
+                                                                                device.getSurface());
     surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
     presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
     extent = chooseSwapExtent(swapChainSupport.capabilities);
@@ -53,8 +105,6 @@ void SwapChain::createSwapChain() {
         createInfo.pQueueFamilyIndices = queueFamilyIndices;
     } else {
         createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        createInfo.queueFamilyIndexCount = 0; // Optional
-        createInfo.pQueueFamilyIndices = nullptr; // Optional
     }
     createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
     createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
@@ -72,7 +122,7 @@ void SwapChain::createSwapChain() {
 }
 
 void SwapChain::createImageViews() {
-    swapChainImageViews.resize(imageCount);
+    swapChainImageViews.resize(swapChainImages.size());
     for (size_t i = 0; i < swapChainImageViews.size(); i++) {
         VkImageViewCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;

@@ -14,6 +14,8 @@ private:
     uint32_t height;
     std::string windowName;
 
+    bool framebufferResized = false;
+
     GLFWwindow* window;
 
 public:
@@ -23,6 +25,9 @@ public:
     GLFWwindow* getWindow() {return window;}
     bool windowShouldClose() {return glfwWindowShouldClose(window);}
     void pollEvents() {glfwPollEvents();}
+    bool isFramebufferResized() const {return framebufferResized;}
+private:
+    static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 };
 }
 

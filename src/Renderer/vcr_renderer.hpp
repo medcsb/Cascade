@@ -28,7 +28,7 @@ private:
 
     Window window{width, height, name};
     Device device{window};
-    SwapChain swapChain{device};
+    SwapChain swapChain{device, window};
     Pipeline pipeline{device};
 public:
     Renderer();

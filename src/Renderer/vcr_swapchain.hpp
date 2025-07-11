@@ -10,6 +10,8 @@ private:
     VkSwapchainKHR swapChain;
     VkFormat swapChainImageFormat;
     std::vector<VkImageView> swapChainImageViews;
+    std::vector<VkImage> swapChainImages;
+    std::vector<VkFramebuffer> swapChainFramebuffers;
     
     VkSurfaceFormatKHR surfaceFormat;
     VkPresentModeKHR presentMode;
@@ -17,27 +19,32 @@ private:
 
     uint32_t imageCount = 0;
 
-    std::vector<VkImage> swapChainImages;
-
+    Window& window;
     Device &device;
 
 public:
-    SwapChain(Device &device);
+    SwapChain(Device &device, Window &window);
     ~SwapChain();
 
     void init();
+    void createFramebuffers(VkRenderPass &renderPass);
+    void recreateSwapChain(VkRenderPass &renderPass);
 
     VkExtent2D getExtent() const {return extent;}
     VkFormat getImageFormat() const {return swapChainImageFormat;}
     uint32_t getImageCount() const {return imageCount;}
     std::vector<VkImageView> getImageViews() const {return swapChainImageViews;}
     VkSwapchainKHR getSwapChain() const {return swapChain;}
+    std::vector<VkFramebuffer> getFramebuffers() const {return swapChainFramebuffers;}
+    bool isFramebufferResized() const {return window.isFramebufferResized();}
 
     static SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
 private:
 
     void createSwapChain();
     void createImageViews();
+
+    void cleanupSwapChain();
 
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
     VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
