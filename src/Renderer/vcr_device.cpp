@@ -15,6 +15,7 @@ namespace vcr {
 Device::Device(Window& window) : window(window) {}
 
 Device::~Device() {
+    vkDestroyCommandPool(device, commandPool, nullptr);
     vkDestroyDevice(device, nullptr);
     if (enableValidationLayers) DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
     vkDestroySurfaceKHR(instance, surface, nullptr);
@@ -27,6 +28,7 @@ void Device::init() {
     createSurface();
     pickPhysicalDevice();
     createLogicalDevice();
+    createCommandPool();
     log();
 }
 
@@ -69,10 +71,8 @@ void Device::createInstance() {
 
 void Device::setupDebugMessenger() {
     if (!enableValidationLayers) return;
-
     VkDebugUtilsMessengerCreateInfoEXT createInfo;
     populateDebugMessengerCreateInfo(createInfo);
-
     if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
         throw std::runtime_error("failed to set up debug messenger");
     }
@@ -132,6 +132,17 @@ void Device::createLogicalDevice() {
     }
     vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
     vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
+}
+
+void Device::createCommandPool() {
+    QueueFamilyIndices queueFamilyIndices = findQueueFamilies(physicalDevice, surface);
+    VkCommandPoolCreateInfo poolInfo{};
+    poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+    if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create command pool!");
+    }
 }
 
 void Device::removeUnsuitableDevices(std::vector<VkPhysicalDevice> &devices) {

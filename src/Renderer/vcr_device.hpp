@@ -56,12 +56,13 @@ private:
     VkInstance instance;
     VkDebugUtilsMessengerEXT debugMessenger;
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-
     VkDevice device;
+
     VkQueue graphicsQueue;
     VkQueue presentQueue;
     VkSurfaceKHR surface;
     VkPresentModeKHR presentMode;
+    VkCommandPool commandPool;
 
 public:
     Device(Window& window);
@@ -72,6 +73,9 @@ public:
     VkPhysicalDevice getPhysicalDevice() const {return physicalDevice;}
     VkSurfaceKHR getSurface() const {return surface;}
     GLFWwindow* getWindow() const {return window.getWindow();}
+    VkCommandPool getCommandPool() const {return commandPool;}
+    VkQueue getGraphicsQueue() const {return graphicsQueue;}
+    VkQueue getPresentQueue() const {return presentQueue;}
     
     static QueueFamilyIndices findQueueFamilies(VkPhysicalDevice physicalDevice, 
                                                 VkSurfaceKHR surface);
@@ -81,6 +85,7 @@ private:
     void createSurface();
     void pickPhysicalDevice();
     void createLogicalDevice();
+    void createCommandPool();
 
     void removeUnsuitableDevices(std::vector<VkPhysicalDevice>& devices);
     bool checkDeviceExtensionSupport(VkPhysicalDevice device);

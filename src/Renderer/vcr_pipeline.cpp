@@ -1,12 +1,11 @@
 #include "vcr_pipeline.hpp"
 
-
-
 namespace vcr {
 
 Pipeline::Pipeline(Device &device) : device(device) {}
 
 Pipeline::~Pipeline() {
+    vkDestroyPipeline(device.getDevice(), graphicsPipeline, nullptr);
     if (pipelineLayout != VK_NULL_HANDLE) {
         vkDestroyPipelineLayout(device.getDevice(), pipelineLayout, nullptr);
     }
@@ -14,40 +13,47 @@ Pipeline::~Pipeline() {
     vkDestroyShaderModule(device.getDevice(), fragShaderModule, nullptr);
 }
 
-void Pipeline::createGraphicsPipeline() {
-    auto shaderStages = createShaderStages(vertShaderModule, fragShaderModule);
-    auto dynamicState = createDynamicState();
-    auto vertexInputState = createVertexInputState();
-    auto inputAssemblyState = createInputAssemblyState();
-    auto viewportState = createViewportState(extent);
-    auto rasterizationState = createRasterizationState();
-    auto multisampleState = createMultisampleState();
-    auto colorBlendState = createColorBlendState();
-    pipelineLayout = createPipelineLayout(device);
-
-
-    PipelineConfig configInfo;
-    configInfo.shaderStages[0] = shaderStages[0];
-    configInfo.shaderStages[1] = shaderStages[1];
-    configInfo.dynamicState = dynamicState;
-    configInfo.vertexInputState = vertexInputState;
-    configInfo.inputAssemblyState = inputAssemblyState;
-    configInfo.viewportState = viewportState;
-    configInfo.rasterizationState = rasterizationState;
-    configInfo.multisampleState = multisampleState;
-    configInfo.colorBlendState = colorBlendState;
-    configInfo.pipelineLayout = pipelineLayout;
+void Pipeline::createGraphicsPipeline(VkRenderPass renderPass) {
+    PipelineConfig config = defaultPipelineConfig(
+        device,
+        extent,
+        vertShaderModule, 
+        fragShaderModule,
+        pipelineLayout,
+        renderPass);
 
     VkGraphicsPipelineCreateInfo pipelineInfo = {};
+    pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+    pipelineInfo.stageCount = 2;
+    pipelineInfo.pStages = config.shaderStages;
+    pipelineInfo.pVertexInputState = &config.vertexInputState;
+    pipelineInfo.pInputAssemblyState = &config.inputAssemblyState;
+    pipelineInfo.pViewportState = &config.viewportState;
+    pipelineInfo.pRasterizationState = &config.rasterizationState;
+    pipelineInfo.pMultisampleState = &config.multisampleState;
+    pipelineInfo.pDepthStencilState = nullptr;
+    pipelineInfo.pColorBlendState = &config.colorBlendState;
+    pipelineInfo.pDynamicState = &config.dynamicState;
+    pipelineInfo.layout = config.pipelineLayout;
+    pipelineInfo.renderPass = config.renderPass;
+    pipelineInfo.subpass = 0;
+    pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+    pipelineInfo.basePipelineIndex = -1;
+    if (vkCreateGraphicsPipelines(device.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create graphics pipeline!");
+    }
 }
 
-void Pipeline::createShaderModules(const std::string &vertexShaderPath,
-                                   const std::string &fragmentShaderPath) {
+std::array<VkShaderModule, 2> Pipeline::createShaderModules(
+    const std::string &vertexShaderPath,
+    const std::string &fragmentShaderPath) {
     auto vertShaderCode = readFile(vertexShaderPath);
     auto fragShaderCode = readFile(fragmentShaderPath);
 
     vertShaderModule = createShaderModule(vertShaderCode);
     fragShaderModule = createShaderModule(fragShaderCode);
+
+    return {vertShaderModule, fragShaderModule};
 }
 
 VkShaderModule Pipeline::createShaderModule(const std::vector<char> &code) {
@@ -80,11 +86,7 @@ std::array<VkPipelineShaderStageCreateInfo, 2> Pipeline::createShaderStages(VkSh
     return shaderStages;
 }
 
-VkPipelineDynamicStateCreateInfo Pipeline::createDynamicState() {
-    std::vector<VkDynamicState> dynamicStates = {
-        VK_DYNAMIC_STATE_VIEWPORT,
-        VK_DYNAMIC_STATE_SCISSOR
-    };
+VkPipelineDynamicStateCreateInfo Pipeline::createDynamicState(std::vector<VkDynamicState>& dynamicStates) {
     VkPipelineDynamicStateCreateInfo dynamicState = {};
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
     dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
@@ -110,7 +112,7 @@ VkPipelineInputAssemblyStateCreateInfo Pipeline::createInputAssemblyState() {
     return inputAssembly;
 }
 
-VkPipelineViewportStateCreateInfo Pipeline::createViewportState(VkExtent2D extent) {
+VkViewport Pipeline::createViewport(const VkExtent2D &extent) {
     VkViewport viewport = {};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
@@ -118,11 +120,17 @@ VkPipelineViewportStateCreateInfo Pipeline::createViewportState(VkExtent2D exten
     viewport.height = static_cast<float>(extent.height);
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
+    return viewport;
+}
 
+VkRect2D Pipeline::createScissor(const VkExtent2D &extent) {
     VkRect2D scissor = {};
     scissor.offset = {0, 0};
     scissor.extent = extent;
+    return scissor;
+}
 
+VkPipelineViewportStateCreateInfo Pipeline::createViewportState(VkViewport& viewport, VkRect2D& scissor) {
     VkPipelineViewportStateCreateInfo viewportState = {};
     viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
     viewportState.viewportCount = 1;
@@ -161,7 +169,7 @@ VkPipelineMultisampleStateCreateInfo Pipeline::createMultisampleState() {
     return multisampleState;
 }
 
-VkPipelineColorBlendStateCreateInfo Pipeline::createColorBlendState() {
+VkPipelineColorBlendAttachmentState Pipeline::createColorBlendAttachment() {
     VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
     colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
                                           VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
@@ -173,6 +181,11 @@ VkPipelineColorBlendStateCreateInfo Pipeline::createColorBlendState() {
     colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
     colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
 
+    return colorBlendAttachment;
+}
+
+VkPipelineColorBlendStateCreateInfo Pipeline::createColorBlendState(
+    const VkPipelineColorBlendAttachmentState &colorBlendAttachment) {
     VkPipelineColorBlendStateCreateInfo colorBlendState = {};
     colorBlendState.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     colorBlendState.logicOpEnable = VK_FALSE;
@@ -199,6 +212,45 @@ VkPipelineLayout Pipeline::createPipelineLayout(Device& device) {
         throw std::runtime_error("failed to create pipeline layout!");
     }
     return pipelineLayout;
+}
+
+PipelineConfig Pipeline::defaultPipelineConfig(Device &device,
+                                              VkExtent2D& extent,
+                                              VkShaderModule& vertShaderModule,
+                                              VkShaderModule& fragShaderModule,
+                                              VkPipelineLayout& pipelineLayout,
+                                              VkRenderPass& renderPass) {
+    PipelineConfig configInfo;
+
+    auto shaderStages = createShaderStages(vertShaderModule, fragShaderModule);
+    auto dynamicState = createDynamicState(configInfo.dynamicStates);
+    auto vertexInputState = createVertexInputState();
+    auto inputAssemblyState = createInputAssemblyState();
+    auto viewport = createViewport(extent);
+    auto scissor = createScissor(extent);
+    auto viewportState = createViewportState(viewport, scissor);
+    auto rasterizationState = createRasterizationState();
+    auto multisampleState = createMultisampleState();
+    auto colorBlendAttachment = createColorBlendAttachment();
+    auto colorBlendState = createColorBlendState(colorBlendAttachment);
+    pipelineLayout = createPipelineLayout(device);
+
+    configInfo.shaderStages[0] = shaderStages[0];
+    configInfo.shaderStages[1] = shaderStages[1];
+    configInfo.dynamicState = dynamicState;
+    configInfo.vertexInputState = vertexInputState;
+    configInfo.inputAssemblyState = inputAssemblyState;
+    configInfo.viewport = viewport;
+    configInfo.scissor = scissor;
+    configInfo.viewportState = viewportState;
+    configInfo.rasterizationState = rasterizationState;
+    configInfo.multisampleState = multisampleState;
+    configInfo.colorBlendAttachment = colorBlendAttachment;
+    configInfo.colorBlendState = colorBlendState;
+    configInfo.pipelineLayout = pipelineLayout;
+    configInfo.renderPass = renderPass;
+    
+    return configInfo;
 }
 
 }

@@ -29,6 +29,9 @@ public:
 
     VkExtent2D getExtent() const {return extent;}
     VkFormat getImageFormat() const {return swapChainImageFormat;}
+    uint32_t getImageCount() const {return imageCount;}
+    std::vector<VkImageView> getImageViews() const {return swapChainImageViews;}
+    VkSwapchainKHR getSwapChain() const {return swapChain;}
 
     static SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
 private:

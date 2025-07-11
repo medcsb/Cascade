@@ -13,15 +13,23 @@ const std::string name = "test App";
 namespace vcr {
 
 class Renderer {
-
 private:
+    const int MAX_FRAMES_IN_FLIGHT = 2;
+
+    VkRenderPass renderPass;
+    std::vector<VkFramebuffer> framebuffers;
+    std::vector<VkCommandBuffer> commandBuffers;
+
+    uint32_t currentFrame = 0;
+
+    std::vector<VkSemaphore> imageAvailableSemaphores;
+    std::vector<VkSemaphore> renderFinishedSemaphores;
+    std::vector<VkFence> inFlightFences;
+
     Window window{width, height, name};
     Device device{window};
     SwapChain swapChain{device};
     Pipeline pipeline{device};
-
-    VkRenderPass renderPass;
-
 public:
     Renderer();
     ~Renderer();
@@ -30,7 +38,13 @@ public:
     void run();
 private:
     void mainLoop();
+    void drawFrame();
+
     void createRenderPass();
+    void createFramebuffers();
+    void createCommandBuffers();
+    void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+    void createSyncObjects();
 };
 
 }
