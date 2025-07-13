@@ -3,6 +3,7 @@
 
 #include "vcr_device.hpp"
 #include "vcr_swapchain.hpp"
+#include "vcr_model.hpp"
 #include "file_utils.hpp"
 
 #include <iostream>
@@ -25,11 +26,14 @@ struct PipelineConfig {
     VkPipelineMultisampleStateCreateInfo multisampleState;
     VkPipelineColorBlendAttachmentState colorBlendAttachment;
     VkPipelineColorBlendStateCreateInfo colorBlendState;
+    VkVertexInputBindingDescription vertexBindingDescription;
+    std::array<VkVertexInputAttributeDescription, 2> vertexAttributeDescriptions;
 };
 
 class Pipeline {
 private:
     Device &device;
+    Model& model;
     VkExtent2D extent;
 
     VkShaderModule vertShaderModule;
@@ -38,7 +42,7 @@ private:
     VkPipelineLayout pipelineLayout;
     VkPipeline graphicsPipeline;
 public:
-    Pipeline(Device &device);
+    Pipeline(Device &device, Model& model);
     ~Pipeline();
 
     VkPipeline getGraphicsPipeline() const {return graphicsPipeline;}
@@ -63,6 +67,7 @@ private:
     static void createViewportState(PipelineConfig &configInfo);
     static void createRasterizationState(PipelineConfig &configInfo);
     static void createMultisampleState(PipelineConfig &configInfo);
+    // TODO : Move ColorBlendAttachment and ColorBlendState to one function
     static void createColorBlendAttachment(PipelineConfig &configInfo);
     static void createColorBlendState(PipelineConfig &configInfo);
     static VkPipelineLayout createPipelineLayout(Device& device);

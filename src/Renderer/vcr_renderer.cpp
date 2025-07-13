@@ -26,6 +26,7 @@ void Renderer::init() {
                                     "../shaders/shader.frag.spv");
     swapChain.createFramebuffers(renderPass);
     framebuffers = swapChain.getFramebuffers();
+    model.createVertexBuffer();
     createCommandBuffers();
     createSyncObjects();
 }
@@ -171,6 +172,10 @@ void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
     renderPassInfo.pClearValues = &clearColor;
     vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.getGraphicsPipeline());
+
+        VkBuffer vertexBuffers[] = {model.getVertexBuffer()};
+        VkDeviceSize offsets[] = {0};
+        vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
         
         VkViewport viewport{};
         viewport.x = 0.0f;
@@ -186,7 +191,7 @@ void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
         scissor.extent = swapChain.getExtent();
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-        vkCmdDraw(commandBuffer, 3, 1, 0, 0); // Draw a triangle
+        vkCmdDraw(commandBuffer, static_cast<uint32_t>(model.getVertexData().size()), 1, 0, 0);
     vkCmdEndRenderPass(commandBuffer);
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
         throw std::runtime_error("Failed to record command buffer!");

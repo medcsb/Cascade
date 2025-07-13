@@ -2,7 +2,7 @@
 
 namespace vcr {
 
-Pipeline::Pipeline(Device &device) : device(device) {}
+Pipeline::Pipeline(Device &device, Model& model) : device(device), model(model) {}
 
 Pipeline::~Pipeline() {
     vkDestroyPipeline(device.getDevice(), graphicsPipeline, nullptr);
@@ -99,10 +99,15 @@ void Pipeline::createDynamicState(PipelineConfig &configInfo) {
 }
 
 void Pipeline::createVertexInputState(PipelineConfig &configInfo) {
+    configInfo.vertexBindingDescription = Model::getBindingDescription();
+    configInfo.vertexAttributeDescriptions = Model::getAttributeDescriptions();
+    size_t attributeCount = configInfo.vertexAttributeDescriptions.size();
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInputInfo.vertexBindingDescriptionCount = 0; // No vertex bindings
-    vertexInputInfo.vertexAttributeDescriptionCount = 0; // No vertex attributes
+    vertexInputInfo.vertexBindingDescriptionCount = 1;
+    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeCount);
+    vertexInputInfo.pVertexBindingDescriptions = &configInfo.vertexBindingDescription;
+    vertexInputInfo.pVertexAttributeDescriptions = configInfo.vertexAttributeDescriptions.data();
     configInfo.vertexInputState = vertexInputInfo;
 }
 
