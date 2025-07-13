@@ -62,8 +62,8 @@ void Renderer::updateUniformBuffer(uint32_t currentImage) {
         (newTime - currentTime).count();
     currentTime = newTime;
 
-    UniformBufferObject ubo{};
-    ubo.model = glm::rotate(ubo.model, time * glm::radians(90.0f) , glm::vec3(0.0f, 0.0f, 1.0f));
+
+    ubo.model = glm::rotate(ubo.model, time * glm::radians(45.0f) , glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), 
                            glm::vec3(0.0f, 0.0f, 0.0f), 
                            glm::vec3(0.0f, 0.0f, 1.0f));
@@ -86,6 +86,7 @@ void Renderer::drawFrame() {
                                             VK_NULL_HANDLE,
                                             &imageIndex);
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+        std::cout << "Swap chain out of date, recreating..." << std::endl;
         swapChain.recreateSwapChain(renderPass);
         return;
     } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
@@ -127,6 +128,7 @@ void Renderer::drawFrame() {
     if (result == VK_ERROR_OUT_OF_DATE_KHR ||
         result == VK_SUBOPTIMAL_KHR ||
         window.isFramebufferResized()) {
+        window.setFramebufferResized(false);
         swapChain.recreateSwapChain(renderPass);
     } else if (result != VK_SUCCESS) {
         throw std::runtime_error("Failed to present swap chain image!");

@@ -28,6 +28,7 @@ private:
     // currentTime = std::chrono::high_resolution_clock::now();
     // type of currentTime is std::chrono::high_resolution_clock::time_point
     std::chrono::high_resolution_clock::time_point currentTime;
+    UniformBufferObject ubo;
 
     const int MAX_FRAMES_IN_FLIGHT = 2;
 
