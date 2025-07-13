@@ -6,15 +6,38 @@
 #include "vcr_swapchain.hpp"
 #include "vcr_pipeline.hpp"
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <chrono>
+#include <thread>
+
 const uint32_t width = 800;
 const uint32_t height = 600;
 const std::string name = "test App";
 
 namespace vcr {
 
+struct UniformBufferObject {
+    glm::mat4 model = glm::mat4(1.0f);
+    glm::mat4 view;
+    glm::mat4 proj;
+};
+
 class Renderer {
 private:
+    // currentTime = std::chrono::high_resolution_clock::now();
+    // type of currentTime is std::chrono::high_resolution_clock::time_point
+    std::chrono::high_resolution_clock::time_point currentTime;
+
     const int MAX_FRAMES_IN_FLIGHT = 2;
+
+    VkDescriptorSetLayout descriptorSetLayout;
+    VkDescriptorPool descriptorPool;
+    std::vector<VkDescriptorSet> descriptorSets;
+
+    std::vector<VkBuffer> uniformBuffers;
+    std::vector<VkDeviceMemory> uniformBuffersMemory;
+    std::vector<void*> uniformBuffersMapped;
 
     VkRenderPass renderPass;
     std::vector<VkFramebuffer> framebuffers;
@@ -42,10 +65,14 @@ private:
     void drawFrame();
 
     void createRenderPass();
-    void createFramebuffers();
     void createCommandBuffers();
     void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
     void createSyncObjects();
+    void createDescriptorSetLayout();
+    void createDescriptorPool();
+    void createDescriptorSets();
+    void createUniformBuffers();
+    void updateUniformBuffer(uint32_t currentImage);
 };
 
 }

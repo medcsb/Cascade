@@ -14,6 +14,7 @@ Pipeline::~Pipeline() {
 }
 
 void Pipeline::createGraphicsPipeline(VkRenderPass& renderPass,
+                                      VkDescriptorSetLayout& descriptorSetLayout,
                                       const std::string& vertShaderPath,
                                       const std::string& fragShaderPath) {
     PipelineConfig config{};
@@ -25,7 +26,7 @@ void Pipeline::createGraphicsPipeline(VkRenderPass& renderPass,
 
     auto shaderStages = createShaderStages(vertShaderModule, fragShaderModule);
 
-    pipelineLayout = createPipelineLayout(device);
+    pipelineLayout = createPipelineLayout(device, descriptorSetLayout);
 
     VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -136,7 +137,7 @@ void Pipeline::createRasterizationState(PipelineConfig &configInfo) {
     rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
     rasterizationState.lineWidth = 1.0f;
     rasterizationState.cullMode = VK_CULL_MODE_BACK_BIT;
-    rasterizationState.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    rasterizationState.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     rasterizationState.depthBiasEnable = VK_FALSE;
     configInfo.rasterizationState = rasterizationState;
 }
@@ -171,10 +172,11 @@ void Pipeline::createColorBlendState(PipelineConfig &configInfo) {
     configInfo.colorBlendState = colorBlendState;
 }
 
-VkPipelineLayout Pipeline::createPipelineLayout(Device& device) {
+VkPipelineLayout Pipeline::createPipelineLayout(Device& device, VkDescriptorSetLayout& descriptorSetLayout) {
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 0;
+    pipelineLayoutInfo.setLayoutCount = 1;
+    pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
     pipelineLayoutInfo.pushConstantRangeCount = 0;
     VkPipelineLayout pipelineLayout;
     if (vkCreatePipelineLayout(device.getDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {

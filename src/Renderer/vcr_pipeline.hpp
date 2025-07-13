@@ -46,10 +46,12 @@ public:
     ~Pipeline();
 
     VkPipeline getGraphicsPipeline() const {return graphicsPipeline;}
+    VkPipelineLayout getPipelineLayout() const {return pipelineLayout;}
 
     void setExtent(const VkExtent2D &extent) {this->extent = extent;}
 
-    void createGraphicsPipeline(VkRenderPass& renderPass, 
+    void createGraphicsPipeline(VkRenderPass& renderPass,
+                                VkDescriptorSetLayout& descriptorSetLayout,
                                 const std::string& vertShaderPath,
                                 const std::string& fragShaderPath);
     std::array<VkShaderModule, 2> createShaderModules(
@@ -70,7 +72,7 @@ private:
     // TODO : Move ColorBlendAttachment and ColorBlendState to one function
     static void createColorBlendAttachment(PipelineConfig &configInfo);
     static void createColorBlendState(PipelineConfig &configInfo);
-    static VkPipelineLayout createPipelineLayout(Device& device);
+    static VkPipelineLayout createPipelineLayout(Device& device, VkDescriptorSetLayout& descriptorSetLayout);
 };
 }
 
