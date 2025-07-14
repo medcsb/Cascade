@@ -25,8 +25,6 @@ struct UniformBufferObject {
 
 class Renderer {
 private:
-    // currentTime = std::chrono::high_resolution_clock::now();
-    // type of currentTime is std::chrono::high_resolution_clock::time_point
     std::chrono::high_resolution_clock::time_point currentTime;
     UniformBufferObject ubo;
 
@@ -74,6 +72,8 @@ private:
     void createDescriptorSets();
     void createUniformBuffers();
     void updateUniformBuffer(uint32_t currentImage);
+    VkCommandBuffer beginSingleTimeCommands();
+    void endSingleTimeCommands(VkCommandBuffer commandBuffer);
 };
 
 }

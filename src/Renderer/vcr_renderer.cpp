@@ -34,6 +34,7 @@ void Renderer::init() {
                                     "../shaders/shader.frag.spv");
     swapChain.createFramebuffers(renderPass);
     framebuffers = swapChain.getFramebuffers();
+    model.createTextureImage("../assets/textures/statue.jpg");
     model.createVertexBuffer();
     model.createIndexBuffer();
     createUniformBuffers();
@@ -62,8 +63,7 @@ void Renderer::updateUniformBuffer(uint32_t currentImage) {
         (newTime - currentTime).count();
     currentTime = newTime;
 
-
-    ubo.model = glm::rotate(ubo.model, time * glm::radians(45.0f) , glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.model = glm::rotate(ubo.model, glm::radians(45.0f) * time , glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), 
                            glm::vec3(0.0f, 0.0f, 0.0f), 
                            glm::vec3(0.0f, 0.0f, 1.0f));
@@ -188,6 +188,38 @@ void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
         throw std::runtime_error("Failed to record command buffer!");
     }
+}
+
+VkCommandBuffer Renderer::beginSingleTimeCommands() {
+    VkCommandBufferAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocInfo.commandPool = device.getCommandPool();
+    allocInfo.commandBufferCount = 1;
+
+    VkCommandBuffer commandBuffer;
+    vkAllocateCommandBuffers(device.getDevice(), &allocInfo, &commandBuffer);
+
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+    vkBeginCommandBuffer(commandBuffer, &beginInfo);
+    return commandBuffer;
+}
+
+void Renderer::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
+    vkEndCommandBuffer(commandBuffer);
+
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &commandBuffer;
+
+    vkQueueSubmit(device.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(device.getGraphicsQueue());
+
+    vkFreeCommandBuffers(device.getDevice(), device.getCommandPool(), 1, &commandBuffer);
 }
 
 void Renderer::createUniformBuffers() {

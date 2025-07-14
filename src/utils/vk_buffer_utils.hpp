@@ -55,16 +55,11 @@ inline void createBuffer(VkDevice device,
     vkBindBufferMemory(device, buffer, bufferMemory, 0);
 }
 
-inline void copyBuffer(VkDevice device,
-                VkCommandPool commandPool,
-                VkQueue graphicsQueue,
-                VkBuffer srcBuffer,
-                VkBuffer dstBuffer,
-                VkDeviceSize size) {
+inline VkCommandBuffer beginSingleTimeCommands(VkDevice device, VkCommandPool commandPool) {
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    allocInfo.commandPool = commandPool;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocInfo.commandPool = commandPool;
     allocInfo.commandBufferCount = 1;
 
     VkCommandBuffer commandBuffer;
@@ -72,13 +67,16 @@ inline void copyBuffer(VkDevice device,
 
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
     vkBeginCommandBuffer(commandBuffer, &beginInfo);
+    return commandBuffer;
+}
 
-    VkBufferCopy copyRegion{};
-    copyRegion.size = size;
-    vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
-
+inline void endSingleTimeCommands(VkDevice device,
+                                  VkCommandPool commandPool,
+                                  VkQueue graphicsQueue,
+                                  VkCommandBuffer commandBuffer) {
     vkEndCommandBuffer(commandBuffer);
 
     VkSubmitInfo submitInfo{};
@@ -90,6 +88,21 @@ inline void copyBuffer(VkDevice device,
     vkQueueWaitIdle(graphicsQueue);
 
     vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
+}
+
+inline void copyBuffer(VkDevice device,
+                VkCommandPool commandPool,
+                VkQueue graphicsQueue,
+                VkBuffer srcBuffer,
+                VkBuffer dstBuffer,
+                VkDeviceSize size) {
+    VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
+
+    VkBufferCopy copyRegion{};
+    copyRegion.size = size;
+    vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+
+    endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
 }
 
 }

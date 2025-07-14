@@ -7,6 +7,7 @@
 
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.h>
+#include <stb_image.h>
 
 #include <vector>
 #include <array>
@@ -27,6 +28,8 @@ private:
     VkBuffer indexBuffer;
     VkDeviceMemory indexBufferMemory;
     VkMemoryRequirements memRequirements;
+    VkImage textureImage;
+    VkDeviceMemory textureImageMemory;
 
     Device &device;
 
@@ -36,6 +39,7 @@ public:
 
     void createVertexBuffer();
     void createIndexBuffer();
+    void createTextureImage(const std::string &filePath);
 
     VkBuffer getVertexBuffer() const {return vertexBuffer;}
     VkBuffer getIndexBuffer() const {return indexBuffer;}
@@ -47,6 +51,17 @@ public:
 
 private:
 
+    void createImage(uint32_t width, 
+                     uint32_t height, 
+                     VkFormat format, 
+                     VkImageTiling tiling, 
+                     VkImageUsageFlags usage, 
+                     VkMemoryPropertyFlags properties, 
+                     VkImage &image, 
+                     VkDeviceMemory &imageMemory);
+
+    void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+    void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 
 };
 }
