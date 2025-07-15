@@ -32,6 +32,21 @@ void Device::init() {
     log();
 }
 
+VkFormat Device::findSupportedFormat(const std::vector<VkFormat>& candidates,
+                                     VkImageTiling tiling,
+                                     VkFormatFeatureFlags features) {
+    for (VkFormat format : candidates) {
+        VkFormatProperties properties;
+        vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &properties);
+        if (tiling == VK_IMAGE_TILING_LINEAR && (properties.linearTilingFeatures & features) == features) {
+            return format;
+        } else if (tiling == VK_IMAGE_TILING_OPTIMAL && (properties.optimalTilingFeatures & features) == features) {
+            return format;
+        }
+    }
+    throw std::runtime_error("failed to find supported depth format!");
+}
+
 void Device::createInstance() {
     if (enableValidationLayers && !checkValidationLayerSupport()) {
         throw std::runtime_error("validation layers not available!");

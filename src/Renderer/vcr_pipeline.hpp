@@ -26,6 +26,7 @@ struct PipelineConfig {
     VkPipelineMultisampleStateCreateInfo multisampleState;
     VkPipelineColorBlendAttachmentState colorBlendAttachment;
     VkPipelineColorBlendStateCreateInfo colorBlendState;
+    VkPipelineDepthStencilStateCreateInfo depthStencilState;
     VkVertexInputBindingDescription vertexBindingDescription;
     std::array<VkVertexInputAttributeDescription, 3> vertexAttributeDescriptions;
 };
@@ -72,6 +73,7 @@ private:
     // TODO : Move ColorBlendAttachment and ColorBlendState to one function
     static void createColorBlendAttachment(PipelineConfig &configInfo);
     static void createColorBlendState(PipelineConfig &configInfo);
+    static void createDepthStencilState(PipelineConfig &configInfo);
     static VkPipelineLayout createPipelineLayout(Device& device, VkDescriptorSetLayout& descriptorSetLayout);
 };
 }

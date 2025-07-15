@@ -69,6 +69,10 @@ public:
     ~Device();
 
     void init();
+    VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates,
+                                 VkImageTiling tiling,
+                                 VkFormatFeatureFlags features);
+
     VkDevice getDevice() const {return device;}
     VkPhysicalDevice getPhysicalDevice() const {return physicalDevice;}
     VkSurfaceKHR getSurface() const {return surface;}

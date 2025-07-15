@@ -2,7 +2,6 @@
 #define VCR_SWAPCHAIN_HPP
 
 #include "vcr_device.hpp"
-#include "vk_utils.hpp"
 
 namespace vcr {
 
@@ -13,6 +12,10 @@ private:
     std::vector<VkImageView> swapChainImageViews;
     std::vector<VkImage> swapChainImages;
     std::vector<VkFramebuffer> swapChainFramebuffers;
+
+    VkImage depthImage;
+    VkDeviceMemory depthImageMemory;
+    VkImageView depthImageView;
     
     VkSurfaceFormatKHR surfaceFormat;
     VkPresentModeKHR presentMode;
@@ -29,8 +32,10 @@ public:
 
     void init();
     void createFramebuffers(VkRenderPass &renderPass);
+    void createDepthResources();
     void recreateSwapChain(VkRenderPass &renderPass);
 
+    VkFormat findDepthFormat();
     VkExtent2D getExtent() const {return extent;}
     VkFormat getImageFormat() const {return swapChainImageFormat;}
     uint32_t getImageCount() const {return imageCount;}
@@ -46,6 +51,9 @@ private:
     void createImageViews();
 
     void cleanupSwapChain();
+    bool hasStencilComponent(VkFormat format) {
+        return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
+    }
 
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
     VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);

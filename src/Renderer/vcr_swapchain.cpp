@@ -1,5 +1,7 @@
 #include "vcr_swapchain.hpp"
 
+#include "vk_utils.hpp"
+
 #include <limits>
 #include <algorithm>
 
@@ -9,16 +11,13 @@ SwapChain::SwapChain(Device &device, Window& window)
     : device(device), window(window) {}
 
 SwapChain::~SwapChain() {
-    for (size_t i = 0; i < swapChainFramebuffers.size(); i++) {
-        vkDestroyFramebuffer(device.getDevice(), swapChainFramebuffers[i], nullptr);
-    }
-    for (size_t i = 0; i < swapChainImageViews.size(); i++) {
-        vkDestroyImageView(device.getDevice(), swapChainImageViews[i], nullptr);
-    }
-    vkDestroySwapchainKHR(device.getDevice(), swapChain, nullptr);
+    cleanupSwapChain();
 }
 
 void SwapChain::cleanupSwapChain() {
+    vkDestroyImageView(device.getDevice(), depthImageView, nullptr);
+    vkDestroyImage(device.getDevice(), depthImage, nullptr);
+    vkFreeMemory(device.getDevice(), depthImageMemory, nullptr);
     for (size_t i = 0; i < swapChainFramebuffers.size(); i++) {
         vkDestroyFramebuffer(device.getDevice(), swapChainFramebuffers[i], nullptr);
     }
@@ -47,6 +46,7 @@ void SwapChain::recreateSwapChain(VkRenderPass &renderPass) {
 
     createSwapChain();
     createImageViews();
+    createDepthResources();
     createFramebuffers(renderPass);
 }
 
@@ -54,15 +54,16 @@ void SwapChain::createFramebuffers(VkRenderPass &renderPass) {
     swapChainFramebuffers.resize(imageCount);
 
     for (size_t i = 0; i < swapChainFramebuffers.size(); i++) {
-        VkImageView attachments[] = {
-            swapChainImageViews[i]
+        std::array<VkImageView, 2> attachments = {
+            swapChainImageViews[i],
+            depthImageView
         };
 
         VkFramebufferCreateInfo framebufferInfo{};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         framebufferInfo.renderPass = renderPass;
-        framebufferInfo.attachmentCount = 1;
-        framebufferInfo.pAttachments = attachments;
+        framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+        framebufferInfo.pAttachments = attachments.data();
         framebufferInfo.width = extent.width;
         framebufferInfo.height = extent.height;
         framebufferInfo.layers = 1;
@@ -70,6 +71,30 @@ void SwapChain::createFramebuffers(VkRenderPass &renderPass) {
             throw std::runtime_error("Failed to create framebuffer!");
         }
     }
+}
+
+void SwapChain::createDepthResources() {
+    VkFormat depthFormat = findDepthFormat();
+    createImage(device.getDevice(), device.getPhysicalDevice(), extent.width, extent.height, depthFormat,
+                 VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
+
+    depthImageView = createImageView(device.getDevice(), depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+
+    transitionImageLayout(device.getDevice(),
+                          device.getCommandPool(),
+                          device.getGraphicsQueue(),
+                          depthImage,
+                          depthFormat,
+                          VK_IMAGE_LAYOUT_UNDEFINED,
+                          VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+}
+
+VkFormat SwapChain::findDepthFormat() {
+    return device.findSupportedFormat(
+        {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
+        VK_IMAGE_TILING_OPTIMAL,
+        VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 }
 
 void SwapChain::createSwapChain() {
