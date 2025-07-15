@@ -34,7 +34,7 @@ void KeyboardMovementController::processInput(float dt) {
         }
 
         double delataX = mouseX - lastMouseX;
-        double delataY = lastMouseY - mouseY;
+        double delataY = mouseY - lastMouseY;
 
         lastMouseX = mouseX;
         lastMouseY = mouseY;
@@ -58,7 +58,7 @@ void KeyboardMovementController::processInput(float dt) {
         camera.setViewDirection(position, newDirection, up);
     }
 
-    glm::vec3 forwardDirection = glm::normalize(glm::vec3(camera.getInverseViewMatrix()[2]));
+    glm::vec3 forwardDirection = glm::normalize(-glm::vec3(camera.getInverseViewMatrix()[2]));
     glm::vec3 rightDirection = glm::normalize(glm::vec3(camera.getInverseViewMatrix()[0]));
     glm::vec3 upDirection = glm::normalize(glm::cross(rightDirection, forwardDirection));
 
@@ -73,7 +73,7 @@ void KeyboardMovementController::processInput(float dt) {
     // apply movement
     if (glm::dot(moveDirection, moveDirection) > std::numeric_limits<float>::epsilon()) {
         moveDirection = glm::normalize(moveDirection) * moveSpeed * dt;
-        glm::vec3 position = glm::vec3(camera.getViewMatrix()[3]);
+        glm::vec3 position = glm::vec3(camera.getInverseViewMatrix()[3]);
         position += moveDirection;
         camera.setViewDirection(position, forwardDirection, upDirection);
     }

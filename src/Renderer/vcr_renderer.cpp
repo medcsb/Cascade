@@ -50,6 +50,7 @@ void Renderer::run() {
 
 void Renderer::mainLoop() {
     currentTime = std::chrono::high_resolution_clock::now();
+    int counter = 0;
 
     camera.setPerspectiveProjection(45.0f, 
                                     static_cast<float>(swapChain.getExtent().width) / 
@@ -61,21 +62,26 @@ void Renderer::mainLoop() {
                             glm::vec3(0.0f, 0.0f, 1.0f));
     
     while (!window.windowShouldClose()) {
+        currentTime = std::chrono::high_resolution_clock::now();
         window.pollEvents();
         drawFrame();
+        frameTime = std::chrono::duration<float, std::chrono::seconds::period>
+            (std::chrono::high_resolution_clock::now() - currentTime).count();
+
+        counter++;
+        if (counter >= 500) {
+            std::cout << "Frames per second : " << 1.0f / frameTime << "\n";
+            counter = 0;
+        }
     }
     vkDeviceWaitIdle(device.getDevice());
 }
 
 void Renderer::updateUniformBuffer(uint32_t currentImage) {
-    auto newTime = std::chrono::high_resolution_clock::now();
-    float time = std::chrono::duration<float, std::chrono::seconds::period>
-        (newTime - currentTime).count();
-    currentTime = newTime;
 
-    cameraController.processInput(time);
+    cameraController.processInput(frameTime);
 
-    ubo.model = glm::rotate(ubo.model, glm::radians(45.0f) * time , glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.model = glm::rotate(ubo.model, glm::radians(45.0f) * frameTime , glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.view = camera.getViewMatrix();
     ubo.proj = camera.getProjectionMatrix();
     memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
@@ -153,7 +159,7 @@ void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
     renderPassInfo.framebuffer = swapChain.getFramebuffers()[imageIndex];
     renderPassInfo.renderArea.offset = {0, 0};
     renderPassInfo.renderArea.extent = swapChain.getExtent();
-    VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
+    VkClearValue clearColor = {{{0.2f, 0.2f, 0.2f, 1.0f}}};
     renderPassInfo.clearValueCount = 1;
     renderPassInfo.pClearValues = &clearColor;
     vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);

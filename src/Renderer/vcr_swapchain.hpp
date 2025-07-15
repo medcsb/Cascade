@@ -2,6 +2,7 @@
 #define VCR_SWAPCHAIN_HPP
 
 #include "vcr_device.hpp"
+#include "vk_utils.hpp"
 
 namespace vcr {
 

@@ -28,6 +28,8 @@ struct UniformBufferObject {
 class Renderer {
 private:
     std::chrono::high_resolution_clock::time_point currentTime;
+    float frameTime = 0.0f;
+
     UniformBufferObject ubo;
 
     const int MAX_FRAMES_IN_FLIGHT = 2;
