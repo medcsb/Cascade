@@ -27,7 +27,7 @@ struct PipelineConfig {
     VkPipelineColorBlendAttachmentState colorBlendAttachment;
     VkPipelineColorBlendStateCreateInfo colorBlendState;
     VkVertexInputBindingDescription vertexBindingDescription;
-    std::array<VkVertexInputAttributeDescription, 2> vertexAttributeDescriptions;
+    std::array<VkVertexInputAttributeDescription, 3> vertexAttributeDescriptions;
 };
 
 class Pipeline {

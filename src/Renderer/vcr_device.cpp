@@ -114,7 +114,9 @@ void Device::createLogicalDevice() {
     }
 
     // TODO : add features we need
-    VkPhysicalDeviceFeatures deviceFeatures{};
+    VkPhysicalDeviceFeatures deviceFeatures{
+        .samplerAnisotropy = VK_TRUE
+    };
 
     VkDeviceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -152,6 +154,8 @@ void Device::removeUnsuitableDevices(std::vector<VkPhysicalDevice> &devices) {
     for (size_t i = 0; i < devices.size(); i++) {
         QueueFamilyIndices indices = Device::findQueueFamilies(devices[i], surface);
         SwapChainSupportDetails swapChainSupport = SwapChain::querySwapChainSupport(devices[i], surface);
+        VkPhysicalDeviceFeatures deviceFeatures;
+        vkGetPhysicalDeviceFeatures(devices[i], &deviceFeatures);
         // P.S : might move to device score to prefer stuff like mailbox presentation... etc
         bool swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
         // if it doesn't support the required swap chain features
@@ -170,6 +174,13 @@ void Device::removeUnsuitableDevices(std::vector<VkPhysicalDevice> &devices) {
         if (!indices.isComplete()) {
             devices.erase(devices.begin() + i);
             i--;
+            continue;
+        }
+        // if it doesn't have sampler anisotropy feature
+        if (!deviceFeatures.samplerAnisotropy) {
+            devices.erase(devices.begin() + i);
+            i--;
+            continue;
         }
     }
 }

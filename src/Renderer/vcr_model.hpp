@@ -15,8 +15,9 @@
 namespace vcr {
 
 struct Vertex {
-    glm::vec2 pos;
+    glm::vec3 pos;
     glm::vec3 color;
+    glm::vec2 texCoord;
 };
 
 class Model {
@@ -27,9 +28,11 @@ private:
     VkDeviceMemory vertexBufferMemory;
     VkBuffer indexBuffer;
     VkDeviceMemory indexBufferMemory;
-    VkMemoryRequirements memRequirements;
+
     VkImage textureImage;
     VkDeviceMemory textureImageMemory;
+    VkImageView textureImageView;
+    VkSampler textureSampler;
 
     Device &device;
 
@@ -39,17 +42,24 @@ public:
 
     void createVertexBuffer();
     void createIndexBuffer();
-    void createTextureImage(const std::string &filePath);
-
+    void createTextures(const std::string &filePath);
+    
     VkBuffer getVertexBuffer() const {return vertexBuffer;}
     VkBuffer getIndexBuffer() const {return indexBuffer;}
     std::vector<Vertex> getVertexData() const {return vertexData;}
     std::vector<uint32_t> getIndices() const {return indices;}
-
+    VkImage getTextureImage() const {return textureImage;}
+    VkImageView getTextureImageView() const {return textureImageView;}
+    VkSampler getTextureSampler() const {return textureSampler;}
+    
     static VkVertexInputBindingDescription getBindingDescription();
-    static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions();
-
+    static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions();
+    
 private:
+    
+    void createTextureImage(const std::string &filePath);
+    void createTextureImageView();
+    void createTextureSampler();
 
     void createImage(uint32_t width, 
                      uint32_t height, 
@@ -59,6 +69,7 @@ private:
                      VkMemoryPropertyFlags properties, 
                      VkImage &image, 
                      VkDeviceMemory &imageMemory);
+    VkImageView createImageView(VkImage image, VkFormat format);
 
     void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
     void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
