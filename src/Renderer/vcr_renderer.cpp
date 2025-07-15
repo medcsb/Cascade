@@ -73,6 +73,8 @@ void Renderer::updateUniformBuffer(uint32_t currentImage) {
         (newTime - currentTime).count();
     currentTime = newTime;
 
+    cameraController.processInput(time);
+
     ubo.model = glm::rotate(ubo.model, glm::radians(45.0f) * time , glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.view = camera.getViewMatrix();
     ubo.proj = camera.getProjectionMatrix();

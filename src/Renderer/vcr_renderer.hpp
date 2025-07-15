@@ -6,6 +6,7 @@
 #include "vcr_swapchain.hpp"
 #include "vcr_pipeline.hpp"
 #include "vcr_camera.hpp"
+#include "keyboard_movement_controller.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -55,6 +56,7 @@ private:
     Model model{device};
     Pipeline pipeline{device, model};
     Camera camera;
+    KeyboardMovementController cameraController{window, camera};
 public:
     Renderer();
     ~Renderer();
