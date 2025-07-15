@@ -35,7 +35,8 @@ void Renderer::init() {
     swapChain.createDepthResources();
     swapChain.createFramebuffers(renderPass);
     framebuffers = swapChain.getFramebuffers();
-    model.createTextures("../assets/textures/statue.jpg");
+    model.loadModel("../assets/models/viking_room.obj");
+    model.createTextures("../assets/textures/viking_room.png");
     model.createVertexBuffer();
     model.createIndexBuffer();
     createUniformBuffers();
@@ -57,10 +58,10 @@ void Renderer::mainLoop() {
                                     static_cast<float>(swapChain.getExtent().width) / 
                                     static_cast<float>(swapChain.getExtent().height), 
                                     0.1f,
-                                    10.0f);
-    camera.setViewDirection(glm::vec3(0.0f, 0.0f, 0.0f),
+                                    100.0f);
+    camera.setViewDirection(glm::vec3(0.0f, 0.0f, 2.0f),
                             glm::vec3(0.0f, 0.0f, -1.0f),
-                            glm::vec3(0.0f, -1.0f, 0.0f));
+                            glm::vec3(1.0f, 0.0f, 0.0f));
     
     while (!window.windowShouldClose()) {
         currentTime = std::chrono::high_resolution_clock::now();

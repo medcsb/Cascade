@@ -69,6 +69,8 @@ void KeyboardMovementController::processInput(float dt) {
     if (glfwGetKey(window.getWindow(), keyMapping.moveRight) == GLFW_PRESS) moveDirection += rightDirection;
     if (glfwGetKey(window.getWindow(), keyMapping.moveUp) == GLFW_PRESS) moveDirection += upDirection;
     if (glfwGetKey(window.getWindow(), keyMapping.moveDown) == GLFW_PRESS) moveDirection -= upDirection;
+    if (glfwGetKey(window.getWindow(), keyMapping.rotateCamLeft) == GLFW_PRESS) upDirection -= rightDirection;
+    if (glfwGetKey(window.getWindow(), keyMapping.rotateCamRight) == GLFW_PRESS) upDirection += rightDirection;
 
     // apply movement
     if (glm::dot(moveDirection, moveDirection) > std::numeric_limits<float>::epsilon()) {

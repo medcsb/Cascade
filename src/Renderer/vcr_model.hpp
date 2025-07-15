@@ -8,6 +8,7 @@
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.h>
 #include <stb_image.h>
+#include <tiny_obj_loader.h>
 
 #include <vector>
 #include <array>
@@ -43,6 +44,7 @@ public:
     void createVertexBuffer();
     void createIndexBuffer();
     void createTextures(const std::string &filePath);
+    void loadModel(const std::string &filePath);
     
     VkBuffer getVertexBuffer() const {return vertexBuffer;}
     VkBuffer getIndexBuffer() const {return indexBuffer;}

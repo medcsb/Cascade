@@ -14,6 +14,8 @@ struct KeyMapping {
     int moveUp = GLFW_KEY_SPACE;
     int moveDown = GLFW_KEY_LEFT_ALT;
     int toggleFPSMode = GLFW_KEY_F;
+    int rotateCamLeft = GLFW_KEY_Q;
+    int rotateCamRight = GLFW_KEY_E;
 };
 
 class KeyboardMovementController {

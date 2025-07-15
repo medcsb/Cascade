@@ -3,23 +3,12 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+#define TINYOBJLOADER_IMPLEMENTATION
+#include <tiny_obj_loader.h>
+
 namespace vcr {
 
-Model::Model(Device &device) : device(device) {
-    vertexData = {
-        {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-        {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-        {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-        {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
-        {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-        {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-        {{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-        {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
-    };
-    indices = {0, 1, 2, 2, 3, 0,
-               4, 5, 6, 6, 7, 4,
-    };
-}
+Model::Model(Device &device) : device(device) {}
 
 Model::~Model() {
     vkDestroyBuffer(device.getDevice(), vertexBuffer, nullptr);
@@ -30,6 +19,39 @@ Model::~Model() {
     vkDestroyImageView(device.getDevice(), textureImageView, nullptr);
     vkDestroyImage(device.getDevice(), textureImage, nullptr);
     vkFreeMemory(device.getDevice(), textureImageMemory, nullptr);
+}
+
+void Model::loadModel(const std::string &filePath) {
+    tinyobj::attrib_t attrib;
+    std::vector<tinyobj::shape_t> shapes;
+    std::vector<tinyobj::material_t> materials;
+    std::string warn, err;
+    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filePath.c_str())) {
+        throw std::runtime_error("Failed to load model: " + warn + err);
+    }
+
+    for (const auto &shape : shapes) {
+        for (const auto &index : shape.mesh.indices) {
+            Vertex vertex{};
+
+            vertex.pos = {
+                attrib.vertices[3 * index.vertex_index + 0],
+                attrib.vertices[3 * index.vertex_index + 1],
+                attrib.vertices[3 * index.vertex_index + 2]
+            };
+
+            vertex.texCoord = {
+                attrib.texcoords[2 * index.texcoord_index + 0],
+                attrib.texcoords[2 * index.texcoord_index + 1]
+            };
+
+            vertex.color = {1.0f, 1.0f, 1.0f};
+            
+            vertexData.push_back(vertex);
+            indices.push_back(indices.size());
+        }
+    }
+    std::cout << "Model loaded with " << vertexData.size() << " vertices." << "\n";
 }
 
 void Model::createVertexBuffer() {
