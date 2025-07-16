@@ -6,6 +6,21 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/hash.hpp>
+
+#include <unordered_map>
+
+namespace std {
+    template<> struct hash<vcr::Vertex> {
+        size_t operator()(vcr::Vertex const& vertex) const {
+            return ((hash<glm::vec3>()(vertex.pos) ^
+                   (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
+                   (hash<glm::vec2>()(vertex.texCoord) << 1);
+        }
+    };
+}
+
 namespace vcr {
 
 Model::Model(Device &device) : device(device) {}
@@ -30,6 +45,8 @@ void Model::loadModel(const std::string &filePath) {
         throw std::runtime_error("Failed to load model: " + warn + err);
     }
 
+    std::unordered_map<Vertex, uint32_t> uniqueVertices{};
+
     for (const auto &shape : shapes) {
         for (const auto &index : shape.mesh.indices) {
             Vertex vertex{};
@@ -46,9 +63,12 @@ void Model::loadModel(const std::string &filePath) {
             };
 
             vertex.color = {1.0f, 1.0f, 1.0f};
-            
-            vertexData.push_back(vertex);
-            indices.push_back(indices.size());
+
+            if (uniqueVertices.count(vertex) == 0) {
+                uniqueVertices[vertex] = static_cast<uint32_t>(vertexData.size());
+                vertexData.push_back(vertex);
+            }
+            indices.push_back(uniqueVertices[vertex]);
         }
     }
     std::cout << "Model loaded with " << vertexData.size() << " vertices." << "\n";
