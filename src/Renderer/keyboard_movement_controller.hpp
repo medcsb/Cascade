@@ -32,6 +32,7 @@ private:
     float moveSpeed{3.0f};
     float lookSpeed{2.5f};
     float mouseSensitivity{0.0009f};
+    float rotationSpeed{0.01f};
 
     KeyMapping keyMapping{};
 

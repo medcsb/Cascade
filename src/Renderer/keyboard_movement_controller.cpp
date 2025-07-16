@@ -43,6 +43,14 @@ void KeyboardMovementController::processInput(float dt) {
         rotate.y += static_cast<float>(delataX) * mouseSensitivity;
     }
 
+    // roll rotation
+    if (glfwGetKey(window.getWindow(), keyMapping.rotateCamLeft) == GLFW_PRESS) {
+        rotate.z -= lookSpeed * rotationSpeed;
+    }
+    if (glfwGetKey(window.getWindow(), keyMapping.rotateCamRight) == GLFW_PRESS) {
+        rotate.z += lookSpeed * rotationSpeed;
+    }
+
     // apply rotation
     if (glm::dot(rotate, rotate) > std::numeric_limits<float>::epsilon()) {
         glm::vec3 position = glm::vec3(camera.getInverseViewMatrix()[3]);
@@ -51,11 +59,19 @@ void KeyboardMovementController::processInput(float dt) {
         glm::vec3 up = glm::normalize(glm::cross(right, forward));
 
         // apply pitvh and yaw
-        glm::mat4 yawRotation = glm::rotate(glm::mat4(1.0f), -rotate.y, up);
-        glm::mat4 pitchRotation = glm::rotate(glm::mat4(1.0f), -rotate.x, right);
-        
-        glm::vec3 newDirection = glm::normalize(glm::vec3(yawRotation * pitchRotation * glm::vec4(forward, 0.0f)));
-        camera.setViewDirection(position, newDirection, up);
+        glm::mat4 rotationMatrix = glm::mat4(1.0f);
+        rotationMatrix = glm::rotate(rotationMatrix, -rotate.y, up);
+        rotationMatrix = glm::rotate(rotationMatrix, -rotate.x, right);
+        rotationMatrix = glm::rotate(rotationMatrix, -rotate.z, forward);
+
+        glm::vec3 newForward = glm::normalize(glm::vec3(rotationMatrix * glm::vec4(forward, 0.0f)));
+        if (rotate.z != 0.0f) {
+            // adjust right and up vectors based on the new forward vector
+            right = glm::normalize(glm::vec3(rotationMatrix * glm::vec4(right, 0.0f)));
+            up = glm::normalize(glm::cross(right, newForward));
+        }
+
+        camera.setViewDirection(position, newForward, up);
     }
 
     glm::vec3 forwardDirection = glm::normalize(-glm::vec3(camera.getInverseViewMatrix()[2]));
@@ -69,8 +85,6 @@ void KeyboardMovementController::processInput(float dt) {
     if (glfwGetKey(window.getWindow(), keyMapping.moveRight) == GLFW_PRESS) moveDirection += rightDirection;
     if (glfwGetKey(window.getWindow(), keyMapping.moveUp) == GLFW_PRESS) moveDirection += upDirection;
     if (glfwGetKey(window.getWindow(), keyMapping.moveDown) == GLFW_PRESS) moveDirection -= upDirection;
-    if (glfwGetKey(window.getWindow(), keyMapping.rotateCamLeft) == GLFW_PRESS) upDirection -= rightDirection;
-    if (glfwGetKey(window.getWindow(), keyMapping.rotateCamRight) == GLFW_PRESS) upDirection += rightDirection;
 
     // apply movement
     if (glm::dot(moveDirection, moveDirection) > std::numeric_limits<float>::epsilon()) {

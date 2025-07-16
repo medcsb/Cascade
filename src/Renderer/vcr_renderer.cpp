@@ -59,9 +59,9 @@ void Renderer::mainLoop() {
                                     static_cast<float>(swapChain.getExtent().height), 
                                     0.1f,
                                     100.0f);
-    camera.setViewDirection(glm::vec3(0.0f, 0.0f, 2.0f),
-                            glm::vec3(0.0f, 0.0f, -1.0f),
-                            glm::vec3(1.0f, 0.0f, 0.0f));
+    camera.setViewDirection(glm::vec3(2.0f, 0.0f, 0.5f),
+                            glm::vec3(-1.0f, 0.0f, 0.0f),
+                            glm::vec3(0.0f, 0.0f, 1.0f));
     
     while (!window.windowShouldClose()) {
         currentTime = std::chrono::high_resolution_clock::now();
@@ -72,7 +72,7 @@ void Renderer::mainLoop() {
 
         counter++;
         if (counter >= 500) {
-            std::cout << "Frames per second : " << 1.0f / frameTime << "\n";
+            //std::cout << "Frames per second : " << 1.0f / frameTime << "\n";
             counter = 0;
         }
     }
