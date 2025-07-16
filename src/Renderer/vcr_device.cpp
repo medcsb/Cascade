@@ -29,6 +29,7 @@ void Device::init() {
     pickPhysicalDevice();
     createLogicalDevice();
     createCommandPool();
+    msaaSamples = getMaxUsableSampleCount();
     log();
 }
 
@@ -327,6 +328,35 @@ std::vector<const char *> Device::getRequiredExtensions() {
     }
 
     return requiredExtensions;
+}
+
+VkSampleCountFlagBits Device::getMaxUsableSampleCount() {
+    VkPhysicalDeviceProperties physicalDeviceProperties;
+    vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
+    VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts &
+                                physicalDeviceProperties.limits.framebufferDepthSampleCounts;
+
+    if (counts & VK_SAMPLE_COUNT_64_BIT) return VK_SAMPLE_COUNT_64_BIT;
+    if (counts & VK_SAMPLE_COUNT_32_BIT) return VK_SAMPLE_COUNT_32_BIT;
+    if (counts & VK_SAMPLE_COUNT_16_BIT) return VK_SAMPLE_COUNT_16_BIT;
+    if (counts & VK_SAMPLE_COUNT_8_BIT) return VK_SAMPLE_COUNT_8_BIT;
+    if (counts & VK_SAMPLE_COUNT_4_BIT) return VK_SAMPLE_COUNT_4_BIT;
+    if (counts & VK_SAMPLE_COUNT_2_BIT) return VK_SAMPLE_COUNT_2_BIT;
+
+    return VK_SAMPLE_COUNT_1_BIT; // fallback to 1 sample
+}
+
+void Device::logMSAAsamples() {
+    switch(msaaSamples) {
+        case VK_SAMPLE_COUNT_1_BIT: std::cout << "MSAA samples: 1\n"; break;
+        case VK_SAMPLE_COUNT_2_BIT: std::cout << "MSAA samples: 2\n"; break;
+        case VK_SAMPLE_COUNT_4_BIT: std::cout << "MSAA samples: 4\n"; break;
+        case VK_SAMPLE_COUNT_8_BIT: std::cout << "MSAA samples: 8\n"; break;
+        case VK_SAMPLE_COUNT_16_BIT: std::cout << "MSAA samples: 16\n"; break;
+        case VK_SAMPLE_COUNT_32_BIT: std::cout << "MSAA samples: 32\n"; break;
+        case VK_SAMPLE_COUNT_64_BIT: std::cout << "MSAA samples: 64\n"; break;
+        default: std::cout << "MSAA samples: unknown\n"; break;
+    }
 }
 
 void Device::logExtensionList() {

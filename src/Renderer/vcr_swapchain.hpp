@@ -16,6 +16,10 @@ private:
     VkImage depthImage;
     VkDeviceMemory depthImageMemory;
     VkImageView depthImageView;
+
+    VkImage colorImage;
+    VkDeviceMemory colorImageMemory;
+    VkImageView colorImageView;
     
     VkSurfaceFormatKHR surfaceFormat;
     VkPresentModeKHR presentMode;
@@ -33,6 +37,7 @@ public:
     void init();
     void createFramebuffers(VkRenderPass &renderPass);
     void createDepthResources();
+    void createColorResources();
     void recreateSwapChain(VkRenderPass &renderPass);
 
     VkFormat findDepthFormat();

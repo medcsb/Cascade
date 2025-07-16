@@ -63,6 +63,7 @@ private:
     VkSurfaceKHR surface;
     VkPresentModeKHR presentMode;
     VkCommandPool commandPool;
+    VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 
 public:
     Device(Window& window);
@@ -80,6 +81,7 @@ public:
     VkCommandPool getCommandPool() const {return commandPool;}
     VkQueue getGraphicsQueue() const {return graphicsQueue;}
     VkQueue getPresentQueue() const {return presentQueue;}
+    VkSampleCountFlagBits getMsaaSamples() const {return msaaSamples;}
     
     static QueueFamilyIndices findQueueFamilies(VkPhysicalDevice physicalDevice, 
                                                 VkSurfaceKHR surface);
@@ -98,11 +100,16 @@ private:
     void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
     bool checkValidationLayerSupport();
     std::vector<const char*> getRequiredExtensions();
+    VkSampleCountFlagBits getMaxUsableSampleCount();
 
-    void log() {logChosenPhysicalDevice();}
+    void log() {
+        logChosenPhysicalDevice();
+        logMSAAsamples();
+    }
     void logChosenPhysicalDevice();
     void logExtensionList();
     void logValidationLayers();
+    void logMSAAsamples();
 };
 } // namespace vcr
 

@@ -15,6 +15,9 @@ SwapChain::~SwapChain() {
 }
 
 void SwapChain::cleanupSwapChain() {
+    vkDestroyImageView(device.getDevice(), colorImageView, nullptr);
+    vkDestroyImage(device.getDevice(), colorImage, nullptr);
+    vkFreeMemory(device.getDevice(), colorImageMemory, nullptr);
     vkDestroyImageView(device.getDevice(), depthImageView, nullptr);
     vkDestroyImage(device.getDevice(), depthImage, nullptr);
     vkFreeMemory(device.getDevice(), depthImageMemory, nullptr);
@@ -46,6 +49,7 @@ void SwapChain::recreateSwapChain(VkRenderPass& renderPass) {
 
     createSwapChain();
     createImageViews();
+    createColorResources();
     createDepthResources();
     createFramebuffers(renderPass);
 }
@@ -54,7 +58,11 @@ void SwapChain::createFramebuffers(VkRenderPass& renderPass) {
     swapChainFramebuffers.resize(imageCount);
 
     for (size_t i = 0; i < swapChainFramebuffers.size(); i++) {
-        std::array<VkImageView, 2> attachments = {swapChainImageViews[i], depthImageView};
+        std::array<VkImageView, 3> attachments = {
+            colorImageView,
+            depthImageView,
+            swapChainImageViews[i]
+        };
 
         VkFramebufferCreateInfo framebufferInfo{};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -84,7 +92,8 @@ void SwapChain::createDepthResources() {
                 VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                 depthImage,
-                depthImageMemory);
+                depthImageMemory,
+                device.getMsaaSamples());
 
     depthImageView = createImageView(device.getDevice(), depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1);
 
@@ -96,6 +105,27 @@ void SwapChain::createDepthResources() {
                           VK_IMAGE_LAYOUT_UNDEFINED,
                           VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                           1);
+}
+
+void SwapChain::createColorResources() {
+    VkFormat colorFormat = swapChainImageFormat;
+    createImage(device.getDevice(),
+                device.getPhysicalDevice(),
+                extent.width,
+                extent.height,
+                1,
+                colorFormat,
+                VK_IMAGE_TILING_OPTIMAL,
+                VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                colorImage,
+                colorImageMemory,
+                device.getMsaaSamples());
+    colorImageView = createImageView(device.getDevice(),
+                                     colorImage,
+                                     colorFormat,
+                                     VK_IMAGE_ASPECT_COLOR_BIT,
+                                     1);
 }
 
 VkFormat SwapChain::findDepthFormat() {

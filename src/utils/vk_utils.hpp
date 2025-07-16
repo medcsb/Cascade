@@ -117,7 +117,8 @@ inline void createImage(VkDevice device,
                         VkImageUsageFlags usage,
                         VkMemoryPropertyFlags properties,
                         VkImage& image,
-                        VkDeviceMemory& imageMemory) {
+                        VkDeviceMemory& imageMemory,
+                        VkSampleCountFlagBits numSamples = VK_SAMPLE_COUNT_1_BIT) {
 
     VkImageCreateInfo imageInfo{};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -132,7 +133,7 @@ inline void createImage(VkDevice device,
     imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     imageInfo.usage = usage;
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    imageInfo.samples = numSamples;
 
     if (vkCreateImage(device, &imageInfo, nullptr, &image) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create image!");

@@ -18,6 +18,7 @@ void Pipeline::createGraphicsPipeline(VkRenderPass& renderPass,
                                       const std::string& vertShaderPath,
                                       const std::string& fragShaderPath) {
     PipelineConfig config{};
+    config.setSamples(device.getMsaaSamples());
     Pipeline::defaultPipelineConfig(config);
 
     auto shaderModules = createShaderModules(vertShaderPath, fragShaderPath);
@@ -147,7 +148,7 @@ void Pipeline::createMultisampleState(PipelineConfig &configInfo) {
     VkPipelineMultisampleStateCreateInfo multisampleState{};
     multisampleState.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     multisampleState.sampleShadingEnable = VK_FALSE;
-    multisampleState.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+    multisampleState.rasterizationSamples = configInfo.msaaSamples;
     configInfo.multisampleState = multisampleState;
 }
 

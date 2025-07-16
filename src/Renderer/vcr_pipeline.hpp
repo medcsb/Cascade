@@ -17,6 +17,7 @@ struct PipelineConfig {
         VK_DYNAMIC_STATE_VIEWPORT,
         VK_DYNAMIC_STATE_SCISSOR
     };
+    VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
     VkPipelineShaderStageCreateInfo shaderStages[2];
     VkPipelineDynamicStateCreateInfo dynamicState;
     VkPipelineVertexInputStateCreateInfo vertexInputState;
@@ -29,6 +30,8 @@ struct PipelineConfig {
     VkPipelineDepthStencilStateCreateInfo depthStencilState;
     VkVertexInputBindingDescription vertexBindingDescription;
     std::array<VkVertexInputAttributeDescription, 3> vertexAttributeDescriptions;
+
+    void setSamples(VkSampleCountFlagBits samples) {msaaSamples = samples;}
 };
 
 class Pipeline {
