@@ -147,7 +147,8 @@ void Pipeline::createRasterizationState(PipelineConfig &configInfo) {
 void Pipeline::createMultisampleState(PipelineConfig &configInfo) {
     VkPipelineMultisampleStateCreateInfo multisampleState{};
     multisampleState.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-    multisampleState.sampleShadingEnable = VK_FALSE;
+    multisampleState.sampleShadingEnable = VK_TRUE;
+    multisampleState.minSampleShading = 0.2f;
     multisampleState.rasterizationSamples = configInfo.msaaSamples;
     configInfo.multisampleState = multisampleState;
 }

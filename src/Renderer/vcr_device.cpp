@@ -131,6 +131,7 @@ void Device::createLogicalDevice() {
 
     // TODO : add features we need
     VkPhysicalDeviceFeatures deviceFeatures{
+        .sampleRateShading = VK_TRUE,
         .samplerAnisotropy = VK_TRUE
     };
 
