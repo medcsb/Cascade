@@ -10,6 +10,18 @@ KeyboardMovementController::KeyboardMovementController(Window& window, Camera& c
 KeyboardMovementController::~KeyboardMovementController() {}
 
 void KeyboardMovementController::processInput(float dt) {
+    if (glfwGetKey(window.getWindow(), keyMapping.shift) == GLFW_PRESS) {
+        moveSpeed = SLOW_MOVE_SPEED;
+        lookSpeed = SLOW_LOOK_SPEED;
+        mouseSensitivity = SLOW_MOUSE_SENSITIVITY;
+        rotationSpeed = SLOW_ROTATION_SPEED;
+    } else if (glfwGetKey(window.getWindow(), keyMapping.shift) == GLFW_RELEASE) {
+        moveSpeed = NORMAL_MOVE_SPEED;
+        lookSpeed = NORMAL_LOOK_SPEED;
+        mouseSensitivity = NORMAL_MOUSE_SENSITIVITY;
+        rotationSpeed = NORMAL_ROTATION_SPEED;
+    }
+
     bool fpsKeyCurrentlyPressed = glfwGetKey(window.getWindow(), keyMapping.toggleFPSMode) == GLFW_PRESS;
     if (fpsKeyCurrentlyPressed && !fpsKeyPressed) {
         fpsMode = !fpsMode;

@@ -6,6 +6,16 @@
 
 namespace vcr {
 
+const float NORMAL_MOVE_SPEED = 3.0f;
+const float NORMAL_LOOK_SPEED = 0.5f;
+const float NORMAL_MOUSE_SENSITIVITY = 0.0009f;
+const float NORMAL_ROTATION_SPEED = 0.01f;
+
+const float SLOW_MOVE_SPEED = 0.5f;
+const float SLOW_LOOK_SPEED = 0.2f;
+const float SLOW_MOUSE_SENSITIVITY = 0.0006f;
+const float SLOW_ROTATION_SPEED = 0.0025f;
+
 struct KeyMapping {
     int moveForward = GLFW_KEY_W;
     int moveBackward = GLFW_KEY_S;
@@ -20,6 +30,7 @@ struct KeyMapping {
     int rightArrow = GLFW_KEY_RIGHT;
     int upArrow = GLFW_KEY_UP;
     int downArrow = GLFW_KEY_DOWN;
+    int shift = GLFW_KEY_LEFT_SHIFT;
 };
 
 class KeyboardMovementController {
@@ -33,10 +44,10 @@ private:
     float lastMouseX = 0.0f;
     float lastMouseY = 0.0f;
     
-    float moveSpeed{3.0f};
-    float lookSpeed{0.5f};
-    float mouseSensitivity{0.0009f};
-    float rotationSpeed{0.01f};
+    float moveSpeed{NORMAL_MOVE_SPEED};
+    float lookSpeed{NORMAL_LOOK_SPEED};
+    float mouseSensitivity{NORMAL_MOUSE_SENSITIVITY};
+    float rotationSpeed{NORMAL_ROTATION_SPEED};
 
     KeyMapping keyMapping{};
 
