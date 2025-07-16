@@ -16,6 +16,10 @@ struct KeyMapping {
     int toggleFPSMode = GLFW_KEY_F;
     int rotateCamLeft = GLFW_KEY_Q;
     int rotateCamRight = GLFW_KEY_E;
+    int leftArrow = GLFW_KEY_LEFT;
+    int rightArrow = GLFW_KEY_RIGHT;
+    int upArrow = GLFW_KEY_UP;
+    int downArrow = GLFW_KEY_DOWN;
 };
 
 class KeyboardMovementController {
@@ -30,7 +34,7 @@ private:
     float lastMouseY = 0.0f;
     
     float moveSpeed{3.0f};
-    float lookSpeed{2.5f};
+    float lookSpeed{0.5f};
     float mouseSensitivity{0.0009f};
     float rotationSpeed{0.01f};
 

@@ -151,7 +151,11 @@ void Model::createTextures(const std::string &filePath) {
 }
 
 void Model::createTextureImageView() {
-    textureImageView = createImageView(device.getDevice(), textureImage, VK_FORMAT_R8G8B8A8_SRGB);
+    textureImageView = createImageView(device.getDevice(),
+                                       textureImage,
+                                       VK_FORMAT_R8G8B8A8_SRGB,
+                                       VK_IMAGE_ASPECT_COLOR_BIT,
+                                       mipLevels);
 }
 
 void Model::createTextureSampler() {
@@ -174,7 +178,7 @@ void Model::createTextureSampler() {
     samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
     samplerInfo.mipLodBias = 0.0f;
     samplerInfo.minLod = 0.0f;
-    samplerInfo.maxLod = 0.0f;
+    samplerInfo.maxLod = static_cast<float>(mipLevels);
 
     if (vkCreateSampler(device.getDevice(), &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create texture sampler!");
@@ -187,6 +191,7 @@ void Model::createTextureImage(const std::string &filePath) {
     // see https://vulkan-tutorial.com/Texture_mapping/Images at the end of the page
     int texWidth, texHeight, texChannels;
     stbi_uc* pixels = stbi_load(filePath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+    mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
     VkDeviceSize imageSize = texWidth * texHeight * 4; // 4 channels for RGBA
     if (!pixels) {
         throw std::runtime_error("Failed to load texture image!");
@@ -211,9 +216,11 @@ void Model::createTextureImage(const std::string &filePath) {
                 device.getPhysicalDevice(),
                 texWidth,
                 texHeight,
+                mipLevels,
                 VK_FORMAT_R8G8B8A8_SRGB,
                 VK_IMAGE_TILING_OPTIMAL,
-                VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+                VK_IMAGE_USAGE_SAMPLED_BIT,
                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                 textureImage,
                 textureImageMemory);
@@ -224,7 +231,8 @@ void Model::createTextureImage(const std::string &filePath) {
                           textureImage,
                           VK_FORMAT_R8G8B8A8_SRGB,
                           VK_IMAGE_LAYOUT_UNDEFINED,
-                          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+                          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                          mipLevels);
 
     copyBufferToImage(device.getDevice(),
                       device.getCommandPool(),
@@ -234,16 +242,18 @@ void Model::createTextureImage(const std::string &filePath) {
                       static_cast<uint32_t>(texWidth),
                       static_cast<uint32_t>(texHeight));
 
-    transitionImageLayout(device.getDevice(),
-                          device.getCommandPool(),
-                          device.getGraphicsQueue(),
-                          textureImage,
-                          VK_FORMAT_R8G8B8A8_SRGB,
-                          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                          VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
     vkDestroyBuffer(device.getDevice(), stagingBuffer, nullptr);
     vkFreeMemory(device.getDevice(), stagingBufferMemory, nullptr);
+
+    generateMipmaps(device.getDevice(),
+                    device.getPhysicalDevice(),
+                    device.getCommandPool(),
+                    device.getGraphicsQueue(),
+                    textureImage,
+                    VK_FORMAT_R8G8B8A8_SRGB,
+                    texWidth,
+                    texHeight,
+                    mipLevels);
 }
 
 VkVertexInputBindingDescription Model::getBindingDescription() {

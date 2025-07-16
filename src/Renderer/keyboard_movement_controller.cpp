@@ -45,11 +45,17 @@ void KeyboardMovementController::processInput(float dt) {
 
     // roll rotation
     if (glfwGetKey(window.getWindow(), keyMapping.rotateCamLeft) == GLFW_PRESS) {
-        rotate.z -= lookSpeed * rotationSpeed;
-    }
-    if (glfwGetKey(window.getWindow(), keyMapping.rotateCamRight) == GLFW_PRESS) {
         rotate.z += lookSpeed * rotationSpeed;
     }
+    if (glfwGetKey(window.getWindow(), keyMapping.rotateCamRight) == GLFW_PRESS) {
+        rotate.z -= lookSpeed * rotationSpeed;
+    }
+
+    // arrow key rotation
+    if (glfwGetKey(window.getWindow(), keyMapping.leftArrow) == GLFW_PRESS) rotate.y -= lookSpeed * rotationSpeed;
+    if (glfwGetKey(window.getWindow(), keyMapping.rightArrow) == GLFW_PRESS) rotate.y += lookSpeed * rotationSpeed;
+    if (glfwGetKey(window.getWindow(), keyMapping.upArrow) == GLFW_PRESS) rotate.x -= lookSpeed * rotationSpeed;
+    if (glfwGetKey(window.getWindow(), keyMapping.downArrow) == GLFW_PRESS) rotate.x += lookSpeed * rotationSpeed;
 
     // apply rotation
     if (glm::dot(rotate, rotate) > std::numeric_limits<float>::epsilon()) {
@@ -60,9 +66,9 @@ void KeyboardMovementController::processInput(float dt) {
 
         // apply pitvh and yaw
         glm::mat4 rotationMatrix = glm::mat4(1.0f);
-        rotationMatrix = glm::rotate(rotationMatrix, -rotate.y, up);
-        rotationMatrix = glm::rotate(rotationMatrix, -rotate.x, right);
-        rotationMatrix = glm::rotate(rotationMatrix, -rotate.z, forward);
+        rotationMatrix = glm::rotate(rotationMatrix, -rotate.y, up);        // yaw
+        rotationMatrix = glm::rotate(rotationMatrix, -rotate.x, right);     // pitch
+        rotationMatrix = glm::rotate(rotationMatrix, -rotate.z, forward);   // roll
 
         glm::vec3 newForward = glm::normalize(glm::vec3(rotationMatrix * glm::vec4(forward, 0.0f)));
         if (rotate.z != 0.0f) {
